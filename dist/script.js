@@ -157,23 +157,8 @@
     });
   }
 
-  // The artwork responds only to deliberate pointer movement; no endless motion.
+  // Card highlights respond only to deliberate pointer movement.
   const finePointer = matchMedia('(hover: hover) and (pointer: fine)');
-  const scene = document.querySelector('.intelligence-scene');
-  if (scene) {
-    const resetScene = () => {
-      scene.style.removeProperty('--scene-x');
-      scene.style.removeProperty('--scene-y');
-    };
-    scene.addEventListener('pointermove', (event) => {
-      if (motionPreference.matches || !finePointer.matches) return;
-      const bounds = scene.getBoundingClientRect();
-      scene.style.setProperty('--scene-x', ((event.clientX - bounds.left) / bounds.width - .5) * 22 + 'px');
-      scene.style.setProperty('--scene-y', ((event.clientY - bounds.top) / bounds.height - .5) * 18 + 'px');
-    });
-    scene.addEventListener('pointerleave', resetScene);
-    motionPreference.addEventListener('change', resetScene);
-  }
   document.querySelectorAll('.solution-card').forEach((card) => {
     card.addEventListener('pointermove', (event) => {
       if (motionPreference.matches || !finePointer.matches) return;
