@@ -1,5 +1,6 @@
 (() => {
   'use strict';
+  const motionPreference = matchMedia('(prefers-reduced-motion: reduce)');
   const menuToggle = document.querySelector('.menu-toggle');
   const mobileNav = document.getElementById('mobile-nav');
   function closeMenu() {
@@ -56,7 +57,7 @@
   };
   function bubble(text, sender) {
     const element = document.createElement('div');
-    element.className = 'bubble bubble-' + sender;
+    element.className = 'bubble bubble-' + sender + ' bubble-new';
     element.textContent = text;
     const meta = document.createElement('span');
     meta.className = 'message-meta';
@@ -69,7 +70,7 @@
     if (!button) return;
     const key = button.dataset.demo;
     if (key === 'projeto') {
-      document.getElementById('contato').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+      document.getElementById('contato').scrollIntoView({ behavior: motionPreference.matches ? 'instant' : 'smooth' });
       const contactHeading = document.querySelector('#contato h2');
       contactHeading.setAttribute('tabindex', '-1');
       contactHeading.focus({ preventScroll: true });
@@ -114,4 +115,34 @@
     document.getElementById('contact-note').textContent = 'Uma conversa para entender seu negócio. Sem compromisso.';
   }
   document.getElementById('year').textContent = String(new Date().getFullYear());
+
+  // Progressive enhancement: content is visible even when motion is unavailable.
+  if (!motionPreference.matches && 'IntersectionObserver' in window && 'animate' in Element.prototype) {
+    const activeAnimations = new Set();
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.filter((entry) => entry.isIntersecting).forEach((entry, index) => {
+        revealObserver.unobserve(entry.target);
+        if (motionPreference.matches || entry.target.contains(document.activeElement)) return;
+        const animation = entry.target.animate(
+          [{ opacity: .55, transform: 'translateY(16px)' }, { opacity: 1, transform: 'translateY(0)' }],
+          { duration: 620, delay: Math.min(index, 3) * 60, easing: 'cubic-bezier(.2,.7,.25,1)' }
+        );
+        activeAnimations.add(animation);
+        const cleanUp = () => activeAnimations.delete(animation);
+        animation.onfinish = cleanUp;
+        animation.oncancel = cleanUp;
+      });
+    }, { threshold: .1 });
+
+    document.querySelectorAll(
+      '.hero-copy > *, .hero-visual, .strip-inner > *, .section-heading, .solution-card, .process-intro, .steps li, .faq-layout > div:first-child, .faq-list, .contact-panel'
+    ).forEach((element) => revealObserver.observe(element));
+
+    motionPreference.addEventListener('change', (event) => {
+      if (!event.matches) return;
+      revealObserver.disconnect();
+      activeAnimations.forEach((animation) => animation.cancel());
+      activeAnimations.clear();
+    });
+  }
 })();
