@@ -11,9 +11,10 @@
   <meta property="og:type" content="website">
   <meta property="og:locale" content="pt_BR">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/styles.css?v=2">
+  <link rel="stylesheet" href="/styles.css?v=3">
+  <link rel="stylesheet" href="/experience.css?v=3">
   <script src="/site-config.js" defer></script>
-  <script src="/script.js?v=2" defer></script>
+  <script src="/script.js?v=3" defer></script>
 </head>
 <body>
   <svg class="icon-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
@@ -51,9 +52,20 @@
         <div class="hero-actions"><a class="button button-primary" data-whatsapp-link href="https://wa.me/5511966373319?text=Ol%C3%A1%21%20Quero%20conhecer%20os%20agentes%20de%20IA%20da%20SmartDev%20AI%20para%20o%20WhatsApp%20da%20minha%20empresa." target="_blank" rel="noopener noreferrer">Quero meu agente de IA <svg class="icon"><use href="#i-arrow"/></svg></a><a class="text-link demo-link" href="#demonstracao">Veja em ação <span aria-hidden="true">↗</span></a></div>
         <p class="hero-note"><svg class="icon"><use href="#i-check"/></svg> Mais tempo para o que só você pode fazer.</p>
       </div>
-      <div id="demonstracao" class="hero-visual">
-        <div class="art-slot" aria-hidden="true"><img class="hero-art" src="/assets/emerald-ribbon.webp" alt="" width="1536" height="1024" fetchpriority="high"></div>
-        <div class="demo-orbit-label"><svg class="icon"><use href="#i-spark"/></svg> Uma conversa. Muitas possibilidades.</div>
+      <div class="intelligence-scene" aria-label="Arte abstrata de um núcleo de inteligência em vidro verde">
+        <span class="scene-word" aria-hidden="true">AI</span>
+        <div class="core-art"><img src="/assets/intelligence-core.webp" alt="" width="1254" height="1254" fetchpriority="high"></div>
+        <div class="scene-label"><span class="scene-label-index">01 /</span> INTELIGÊNCIA COM A SUA IDENTIDADE</div>
+        <div class="scene-message scene-message-in" aria-hidden="true"><svg class="icon"><use href="#i-message"/></svg><div><span>SEU CLIENTE</span><p>Oi! Pode me ajudar?</p></div></div>
+        <div class="scene-message scene-message-out" aria-hidden="true"><span class="scene-agent"><svg class="icon"><use href="#i-spark"/></svg></span><div><span>SEU AGENTE</span><p>Claro. Vamos conversar.</p></div></div>
+        <div class="scene-caption" aria-hidden="true"><span>TECNOLOGIA QUE APROXIMA.</span><span>SMARTDEV AI ↗</span></div>
+      </div>
+      <div class="hero-baseline" aria-hidden="true"><span>ATENDE.</span><span>ENTENDE.</span><span class="baseline-accent">CONECTA.</span><svg class="icon"><use href="#i-diagonal"/></svg></div>
+    </section>
+    <section class="demo-section container" aria-labelledby="demo-title">
+      <div class="demo-intro"><p class="eyebrow">EXPERIMENTE A CONVERSA</p><h2 id="demo-title">Uma mensagem.<br><span>Um mundo de<br>possibilidades.</span></h2><p>Seu cliente chega com uma dúvida. O agente acolhe, entende o contexto e ajuda a encontrar o próximo passo.</p><div class="demo-context"><span class="context-label">NESTA DEMONSTRAÇÃO</span><div class="context-path"><span class="context-node is-current">Receber</span><span aria-hidden="true">→</span><span class="context-node">Entender</span><span aria-hidden="true">→</span><span class="context-node">Orientar</span></div><p id="context-detail" aria-live="polite">Escolha atendimento ou vendas para explorar um exemplo.</p></div><p class="demo-disclaimer">Conversa simulada. Seu agente é criado com as informações e orientações da sua empresa.</p></div>
+      <div id="demonstracao" class="demo-stage">
+        <div class="demo-stage-heading"><svg class="icon"><use href="#i-spark"/></svg><span>SMARTDEV AI / CONVERSA INTERATIVA</span></div>
         <div class="chat-window" aria-label="Demonstração de uma conversa com um agente de IA">
           <div class="chat-head"><div class="chat-avatar" aria-hidden="true">S<span></span></div><div><strong>Agente da sua empresa</strong><span>Assistente de IA</span></div><svg class="icon chat-head-icon"><use href="#i-spark"/></svg></div>
           <div class="chat-body" id="chat-messages" role="log" aria-live="polite" aria-label="Mensagens da demonstração">
@@ -65,17 +77,16 @@
           <div class="chat-choices" id="chat-choices"><button type="button" data-demo="atendimento">Melhorar meu atendimento</button><button type="button" data-demo="vendas">Apoiar minhas vendas</button></div>
           <div class="chat-footer"><span id="demo-hint">Escolha uma opção para explorar</span><button type="button" id="reset-demo" aria-label="Reiniciar demonstração" title="Reiniciar demonstração"><svg class="icon"><use href="#i-replay"/></svg></button></div>
         </div>
-        <div class="floating-note"><span class="note-icon"><svg class="icon"><use href="#i-check"/></svg></span><div><strong>Conversa em andamento.</strong><span>E você cuidando do negócio.</span></div></div>
-        <p class="simulation-caption">Demonstração simulada · o agente real é personalizado para você.</p>
+        <p class="simulation-caption">Interaja com as opções acima. Nenhuma mensagem é enviada.</p>
       </div>
     </section>
     <div class="benefit-strip"><div class="container strip-inner"><p>MENOS TAREFAS REPETIDAS.<br><strong>MAIS CONEXÕES DE VERDADE.</strong></p><span><svg class="icon"><use href="#i-clock"/></svg> Atendimento além do horário</span><span><svg class="icon"><use href="#i-spark"/></svg> Conversas com contexto</span><span><svg class="icon"><use href="#i-human"/></svg> Sua equipe no controle</span></div></div>
     <section id="solucoes" class="section container">
       <div class="section-heading"><div><p class="eyebrow">FEITO PARA O SEU DIA A DIA</p><h2>Sua equipe ganha tempo.<br>Seu cliente ganha atenção.</h2></div><p>Da primeira mensagem ao próximo passo, um agente preparado para a realidade do seu negócio.</p></div>
       <div class="solution-grid">
-        <article class="solution-card"><span class="feature-icon"><svg class="icon"><use href="#i-message"/></svg></span><span class="card-number">01</span><h3>Atenda sem deixar<br>a conversa esfriar.</h3><p>Responda dúvidas frequentes sobre serviços, horários e processos, inclusive quando sua equipe estiver fora.</p><div class="card-detail"><svg class="icon"><use href="#i-check"/></svg> Respostas com a sua base de informações</div></article>
-        <article class="solution-card"><span class="feature-icon"><svg class="icon"><use href="#i-filter"/></svg></span><span class="card-number">02</span><h3>Entenda quem chega.<br>Avance com contexto.</h3><p>Identifique o interesse de cada contato e reúna as informações que sua equipe precisa para continuar o atendimento.</p><div class="card-detail"><svg class="icon"><use href="#i-check"/></svg> Contatos mais bem qualificados</div></article>
-        <article class="solution-card"><span class="feature-icon"><svg class="icon"><use href="#i-human"/></svg></span><span class="card-number">03</span><h3>Automatize o repetitivo.<br>Preserve o humano.</h3><p>Deixe as perguntas recorrentes com o agente e encaminhe para uma pessoa quando a conversa pedir atenção especial.</p><div class="card-detail"><svg class="icon"><use href="#i-check"/></svg> Regras de encaminhamento definidas com você</div></article>
+        <article class="solution-card"><span class="feature-icon"><svg class="icon"><use href="#i-message"/></svg></span><span class="card-number">01</span><h3>Atenda sem deixar<br>a conversa esfriar.</h3><p>Responda dúvidas frequentes sobre serviços, horários e processos, inclusive quando sua equipe estiver fora.</p><div class="solution-visual" aria-label="Exemplo ilustrativo de atendimento"><span class="visual-label">EXEMPLO DE CONVERSA</span><span class="visual-message">Quero conhecer os serviços.</span><span class="visual-message is-reply">Claro! O que você está buscando?</span></div><div class="card-detail"><svg class="icon"><use href="#i-check"/></svg> Respostas com a sua base de informações</div></article>
+        <article class="solution-card"><span class="feature-icon"><svg class="icon"><use href="#i-filter"/></svg></span><span class="card-number">02</span><h3>Entenda quem chega.<br>Avance com contexto.</h3><p>Identifique o interesse de cada contato e reúna as informações que sua equipe precisa para continuar o atendimento.</p><div class="solution-visual"><span class="visual-label">O QUE A CONVERSA PODE REVELAR</span><div class="qualification-row"><span>Interesse do cliente</span><svg class="icon"><use href="#i-check"/></svg></div><div class="qualification-row"><span>Necessidade do negócio</span><svg class="icon"><use href="#i-check"/></svg></div><div class="qualification-row"><span>Próximo passo</span><svg class="icon"><use href="#i-check"/></svg></div></div><div class="card-detail"><svg class="icon"><use href="#i-check"/></svg> Contatos mais bem qualificados</div></article>
+        <article class="solution-card"><span class="feature-icon"><svg class="icon"><use href="#i-human"/></svg></span><span class="card-number">03</span><h3>Automatize o repetitivo.<br>Preserve o humano.</h3><p>Deixe as perguntas recorrentes com o agente e encaminhe para uma pessoa quando a conversa pedir atenção especial.</p><div class="solution-visual handoff-visual" aria-label="O agente encaminha o atendimento para sua equipe"><div class="handoff-node"><svg class="icon"><use href="#i-spark"/></svg><span>Agente de IA</span></div><span class="handoff-line" aria-hidden="true"></span><div class="handoff-node"><svg class="icon"><use href="#i-human"/></svg><span>Sua equipe</span></div></div><div class="card-detail"><svg class="icon"><use href="#i-check"/></svg> Regras de encaminhamento definidas com você</div></article>
       </div>
     </section>
     <section id="como-funciona" class="process-section"><div class="container process-layout"><div class="process-intro"><p class="eyebrow">DO SEU JEITO, DO INÍCIO AO FIM</p><h2>Não é só um robô.<br>É o seu negócio,<br><span>bem representado.</span></h2><p>O agente começa entendendo sua empresa. Você participa das decisões e valida a experiência antes de colocá-la em ação.</p><a href="#contato" class="text-link">Vamos desenhar o seu? <svg class="icon"><use href="#i-arrow"/></svg></a></div><ol class="steps"><li><span class="step-index">01</span><div><h3>Entendemos o seu negócio</h3><p>Mapeamos seu atendimento, as dúvidas dos clientes e o que você quer automatizar.</p></div></li><li><span class="step-index">02</span><div><h3>Criamos o seu agente</h3><p>Organizamos as informações, o tom de voz e os caminhos de cada conversa.</p></div></li><li><span class="step-index">03</span><div><h3>Testamos com você</h3><p>Simulamos situações reais e ajustamos as respostas e os limites do atendimento.</p></div></li><li><span class="step-index">04</span><div><h3>Colocamos para conversar</h3><p>Preparamos a entrada em operação no WhatsApp, conforme o escopo combinado.</p></div></li></ol></div></section>
@@ -88,6 +99,7 @@
     </div></section>
     <section id="contato" class="contact-section container"><div class="contact-panel"><div class="contact-overline"><svg class="icon"><use href="#i-spark"/></svg> O PRÓXIMO PASSO COMEÇA COM UMA CONVERSA</div><h2>Seu WhatsApp pode fazer mais.<br><span>Vamos criar o seu agente?</span></h2><p>Conte o que sua empresa precisa. Vamos pensar em um atendimento que trabalhe com você.</p><a id="whatsapp-contact" data-whatsapp-link class="button button-dark" href="https://wa.me/5511966373319?text=Ol%C3%A1%21%20Quero%20conhecer%20os%20agentes%20de%20IA%20da%20SmartDev%20AI%20para%20o%20WhatsApp%20da%20minha%20empresa." target="_blank" rel="noopener noreferrer"><svg class="icon"><use href="#i-message"/></svg><span>Conversar no WhatsApp</span><svg class="icon"><use href="#i-diagonal"/></svg></a><p class="contact-note" id="contact-note">Uma conversa para entender seu negócio. Sem compromisso.</p><div class="contact-details"><a data-whatsapp-link href="https://wa.me/5511966373319?text=Ol%C3%A1%21%20Quero%20conhecer%20os%20agentes%20de%20IA%20da%20SmartDev%20AI%20para%20o%20WhatsApp%20da%20minha%20empresa." target="_blank" rel="noopener noreferrer"><span>WhatsApp</span><strong>(11) 96637-3319</strong></a><a href="mailto:suporte@smartdevai.com.br"><span>E-mail de suporte</span><strong>suporte@smartdevai.com.br</strong></a></div></div></section>
   </main>
+  <div class="signature container" aria-hidden="true">SmartDev <span>AI</span></div>
   <footer class="footer container"><div><a class="brand" href="#inicio" aria-label="SmartDev AI, voltar ao início"><span class="brand-mark" aria-hidden="true">S</span><span class="brand-name">SmartDev <span class="brand-ai">AI</span></span></a><p>Agentes de IA para o seu negócio.</p></div><div class="footer-contact"><a href="mailto:suporte@smartdevai.com.br">suporte@smartdevai.com.br</a><a data-whatsapp-link href="https://wa.me/5511966373319?text=Ol%C3%A1%21%20Quero%20conhecer%20os%20agentes%20de%20IA%20da%20SmartDev%20AI%20para%20o%20WhatsApp%20da%20minha%20empresa." target="_blank" rel="noopener noreferrer">WhatsApp: (11) 96637-3319</a></div><p class="copyright">© <span id="year">2026</span> SmartDev AI.</p><a class="back-top" href="#inicio">Voltar ao início <svg class="icon"><use href="#i-diagonal"/></svg></a></footer>
 </body>
 </html>

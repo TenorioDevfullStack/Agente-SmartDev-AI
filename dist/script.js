@@ -23,6 +23,12 @@
   const hint = document.getElementById('demo-hint');
   const initialMessages = messages.innerHTML;
   const initialChoices = choices.innerHTML;
+  const contextDetail = document.getElementById('context-detail');
+  const contextNodes = document.querySelectorAll('.context-node');
+  function updateContext(step, text) {
+    contextNodes.forEach((node, index) => node.classList.toggle('is-current', index === step));
+    if (contextDetail) contextDetail.textContent = text;
+  }
   const flows = {
     atendimento: {
       label: 'Quero melhorar meu atendimento.',
@@ -80,6 +86,10 @@
     if (!flow) return;
     bubble(flow.label, 'user');
     bubble(flow.reply, 'agent');
+    const isFirstChoice = key === 'atendimento' || key === 'vendas';
+    updateContext(isFirstChoice ? 1 : 2, isFirstChoice
+      ? 'O interesse foi identificado. Agora, o exemplo explora o que sua empresa precisa.'
+      : 'Com mais contexto, o exemplo apresenta um caminho para o seu atendimento.');
     choices.replaceChildren();
     flow.options.forEach(([value, label]) => {
       const choice = document.createElement('button');
@@ -97,6 +107,7 @@
     choices.innerHTML = initialChoices;
     messages.scrollTop = 0;
     hint.textContent = 'Escolha uma opção para explorar';
+    updateContext(0, 'Escolha atendimento ou vendas para explorar um exemplo.');
     choices.querySelector('button')?.focus({ preventScroll: true });
   });
   const config = window.SMARTDEV_CONFIG || {};
@@ -135,7 +146,7 @@
     }, { threshold: .1 });
 
     document.querySelectorAll(
-      '.hero-copy > *, .hero-visual, .strip-inner > *, .section-heading, .solution-card, .process-intro, .steps li, .faq-layout > div:first-child, .faq-list, .contact-panel'
+      '.hero-copy > *, .intelligence-scene, .hero-baseline, .demo-intro, .demo-stage, .strip-inner > *, .section-heading, .solution-card, .process-intro, .steps li, .faq-layout > div:first-child, .faq-list, .contact-panel, .signature'
     ).forEach((element) => revealObserver.observe(element));
 
     motionPreference.addEventListener('change', (event) => {
@@ -145,4 +156,34 @@
       activeAnimations.clear();
     });
   }
+
+  // The artwork responds only to deliberate pointer movement; no endless motion.
+  const finePointer = matchMedia('(hover: hover) and (pointer: fine)');
+  const scene = document.querySelector('.intelligence-scene');
+  if (scene) {
+    const resetScene = () => {
+      scene.style.removeProperty('--scene-x');
+      scene.style.removeProperty('--scene-y');
+    };
+    scene.addEventListener('pointermove', (event) => {
+      if (motionPreference.matches || !finePointer.matches) return;
+      const bounds = scene.getBoundingClientRect();
+      scene.style.setProperty('--scene-x', ((event.clientX - bounds.left) / bounds.width - .5) * 22 + 'px');
+      scene.style.setProperty('--scene-y', ((event.clientY - bounds.top) / bounds.height - .5) * 18 + 'px');
+    });
+    scene.addEventListener('pointerleave', resetScene);
+    motionPreference.addEventListener('change', resetScene);
+  }
+  document.querySelectorAll('.solution-card').forEach((card) => {
+    card.addEventListener('pointermove', (event) => {
+      if (motionPreference.matches || !finePointer.matches) return;
+      const bounds = card.getBoundingClientRect();
+      card.style.setProperty('--light-x', (event.clientX - bounds.left) / bounds.width * 100 + '%');
+      card.style.setProperty('--light-y', (event.clientY - bounds.top) / bounds.height * 100 + '%');
+    });
+    card.addEventListener('pointerleave', () => {
+      card.style.removeProperty('--light-x');
+      card.style.removeProperty('--light-y');
+    });
+  });
 })();
