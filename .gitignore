@@ -1,2 +1,21 @@
-.sites-runtime/
-.DS_Store
+# Segredos: o .env carrega a AUTH_KEY da Evolution e a GROQ_API_KEY.
+# Nunca versionar. Use o .env.example como referência de quais chaves existem.
+.env
+.env.*
+!.env.example
+
+# Dependências e build — só existem dentro da imagem node:22-alpine do agente.
+node_modules/
+.npm-cache/
+.browser-test/
+dist/
+
+# Logs
+*.log
+npm-debug.log*
+backups/
+migracao/
+
+# Windows / OneDrive
+Thumbs.db
+desktop.ini

@@ -1,0 +1,10 @@
+[Unit]
+Description=Backup diario SmartDev as 06h UTC (03h de Sao Paulo)
+
+[Timer]
+OnCalendar=*-*-* 06:00:00 UTC
+Persistent=true
+Unit=smartdev-backup.service
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,10 @@
+[Unit]
+Description=Alerta Telegram SmartDev (%i)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+UMask=0077
+ExecStart=/usr/bin/python3 /opt/smartdev/scripts/alerta-telegram.py %i
+TimeoutStartSec=60

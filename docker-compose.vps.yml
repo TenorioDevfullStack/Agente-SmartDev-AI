@@ -1,0 +1,126 @@
+# Configuração independente para a VPS. Usar: docker compose -f docker-compose.vps.yml ...
+# Não iniciar agente, Evolution ou túnel antes de restaurar os dados e parar a origem.
+name: agente-whatsapp
+
+x-servico: &servico
+  restart: unless-stopped
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+services:
+  evolution-api:
+    <<: *servico
+    image: evoapicloud/evolution-api:v2.3.7
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      AUTHENTICATION_API_KEY: ${AUTH_KEY:?Configure AUTH_KEY no .env}
+      DATABASE_ENABLED: "true"
+      DATABASE_PROVIDER: postgresql
+      DATABASE_CONNECTION_URI: postgresql://postgres:postgres@postgres:5432/evolution
+      DATABASE_SAVE_DATA_INSTANCE: "true"
+      CACHE_REDIS_ENABLED: "true"
+      CACHE_REDIS_URI: redis://redis:6379/0
+      CACHE_REDIS_PREFIX_KEY: evolution
+      CACHE_LOCAL_ENABLED: "false"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - evolution_instances:/evolution/instances
+
+  agente:
+    <<: *servico
+    build: ./agente
+    stop_grace_period: 120s
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      EVOLUTION_URL: http://evolution-api:8080
+      INSTANCE: agente-suporte
+      API_KEY: ${AUTH_KEY:?Configure AUTH_KEY no .env}
+      PROSPECCAO_PERMITIR_BAILEYS: ${PROSPECCAO_PERMITIR_BAILEYS:-false}
+      PROSPECCAO_MODELO_TEXTO: ${PROSPECCAO_MODELO_TEXTO:-}
+      LLM_PROVIDER: groq
+      GROQ_API_KEY: ${GROQ_API_KEY:?Configure GROQ_API_KEY no .env}
+      GROQ_MODEL: ${GROQ_MODEL:-openai/gpt-oss-120b}
+      MONGO_URL: mongodb://mongo:27017
+      ADMIN_NUMBER: ${ADMIN_NUMBER:-}
+      CONTATO_PESSOAL: ${CONTATO_PESSOAL:-}
+      PAINEL_SENHA: ${PAINEL_SENHA:-}
+    depends_on:
+      mongo:
+        condition: service_healthy
+      evolution-api:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  mongo:
+    <<: *servico
+    image: mongo:7
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "quit(db.adminCommand('ping').ok ? 0 : 1)"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+
+  postgres:
+    <<: *servico
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: evolution
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d evolution"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    <<: *servico
+    image: redis:latest
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  proxy:
+    <<: *servico
+    build: ./caddy
+    volumes:
+      - caddy_data:/data
+    depends_on:
+      agente:
+        condition: service_healthy
+
+  cloudflared:
+    <<: *servico
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN:?Configure TUNNEL_TOKEN no .env}
+    depends_on:
+      proxy:
+        condition: service_started
+
+volumes:
+  evolution_instances:
+  postgres_data:
+  redis_data:
+  mongo_data:
+  caddy_data:

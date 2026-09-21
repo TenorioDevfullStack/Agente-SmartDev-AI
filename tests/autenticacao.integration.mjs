@@ -1,0 +1,75 @@
+import { createRequire } from 'node:module';
+import assert from 'node:assert/strict';
+import { request } from 'node:http';
+import { criarAutenticacao } from '../agente/autenticacao.mjs';
+const require = createRequire('/app/package.json');
+const express = require('express');
+const { MongoClient } = require('mongodb');
+const client = new MongoClient('mongodb://mongo:27017'); await client.connect();
+const nome = `teste_auth_${Date.now()}`; const db = client.db(nome);
+let server;
+try {
+  const auth = await criarAutenticacao(db, express.Router, 'senha-inicial-teste');
+  const app = express(); app.use(express.json()); app.use(auth.csrf); app.use('/auth', auth.router);
+  app.use(auth.autenticar, auth.acessoCompleto, auth.auditar);
+  app.get('/dados', (req, res) => res.json({ usuario: req.usuario }));
+  app.post('/conversas/5511000000001/pausa', (req, res) => res.json({ ok: true, usuario: req.usuario }));
+  app.use((err, req, res, next) => { console.error(err.message); res.status(500).json({ erro: 'interno' }); });
+  server = app.listen(0, '127.0.0.1'); await new Promise(r => server.once('listening', r));
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const call = async (path, { cookie, body, method = body ? 'POST' : 'GET', csrf = true, extra = {} } = {}) => {
+    const res = await fetch(base + path, { method, headers: { ...(csrf ? { 'x-painel-request': '1' } : {}), ...(cookie ? { cookie } : {}), 'content-type': 'application/json', ...extra }, ...(body ? { body: JSON.stringify(body) } : {}) });
+    return { status: res.status, body: await res.json(), cookie: res.headers.get('set-cookie')?.split(';')[0], header: res.headers.get('set-cookie') };
+  };
+  assert.equal((await call('/dados', { extra: { 'x-painel-senha': 'senha-inicial-teste' } })).status, 401);
+  assert.equal((await call('/auth/login', { body: { login: 'admin', senha: 'senha-inicial-teste' }, csrf: false })).status, 403);
+  assert.equal((await call('/auth/login', { body: { login: 'admin', senha: 'errada' } })).status, 401);
+  let admin = await call('/auth/login', { body: { login: 'admin', senha: 'senha-inicial-teste' } });
+  assert.equal(admin.status, 200); assert.equal(admin.body.usuario.trocarSenha, true);
+  assert.match(admin.header, /HttpOnly/); assert.match(admin.header, /SameSite=Strict/i);
+  assert.equal((await call('/dados', { cookie: admin.cookie })).status, 403);
+  const oldCookie = admin.cookie;
+  admin = await call('/auth/senha', { cookie: admin.cookie, body: { nome: 'Admin Teste', senhaAtual: 'senha-inicial-teste', novaSenha: 'nova-senha-administrador' } });
+  assert.equal(admin.status, 200); assert.equal(admin.body.usuario.trocarSenha, false);
+  assert.equal((await call('/dados', { cookie: oldCookie })).status, 401);
+  assert.equal((await call('/dados', { cookie: admin.cookie })).status, 200);
+  const novo = await call('/auth/usuarios', { cookie: admin.cookie, body: { nome: 'Marina', login: 'marina', senha: 'senha-temporaria-teste' } });
+  assert.equal(novo.status, 201); assert.equal(novo.body.senhaHash, undefined);
+  assert.equal((await call('/auth/usuarios', { cookie: admin.cookie, body: { nome: 'Outra', login: 'marina', senha: 'senha-temporaria-teste' } })).status, 409);
+  let atendente = await call('/auth/login', { body: { login: 'marina', senha: 'senha-temporaria-teste' } });
+  atendente = await call('/auth/senha', { cookie: atendente.cookie, body: { senhaAtual: 'senha-temporaria-teste', novaSenha: 'senha-pessoal-marina' } });
+  assert.equal((await call('/auth/usuarios', { cookie: atendente.cookie })).status, 403);
+  assert.equal((await call('/conversas/5511000000001/pausa', { cookie: atendente.cookie, body: { pausado: true } })).status, 200);
+  await new Promise(r => setTimeout(r, 50));
+  const acao = await db.collection('painel_auditoria').findOne({ acao: 'assumir' });
+  assert.equal(acao.usuario.nome, 'Marina'); assert.equal(acao.estado, 'concluida');
+  assert.equal((await call('/auth/usuarios/' + novo.body.id, { cookie: admin.cookie, method: 'PATCH', body: { ativo: false } })).status, 200);
+  assert.equal((await call('/dados', { cookie: atendente.cookie })).status, 401);
+  await call('/auth/usuarios/' + novo.body.id, { cookie: admin.cookie, method: 'PATCH', body: { ativo: true, senha: 'outra-senha-temporaria' } });
+  const resetado = await call('/auth/login', { body: { login: 'marina', senha: 'outra-senha-temporaria' } });
+  assert.equal(resetado.body.usuario.trocarSenha, true);
+  assert.equal((await call('/dados', { cookie: resetado.cookie })).status, 403);
+  await db.collection('painel_sessoes').updateMany({ usuarioId: novo.body.id }, { $set: { expiraEm: new Date(0) } });
+  assert.equal((await call('/auth/me', { cookie: resetado.cookie })).status, 401);
+  assert.equal((await call('/auth/usuarios/administrador-inicial', { cookie: admin.cookie, method: 'PATCH', body: { ativo: false } })).status, 404);
+  const registros = await db.collection('painel_usuarios').find({}).toArray();
+  assert.ok(registros.every(u => u.senhaHash.includes(':') && !u.senhaHash.includes('senha')));
+  await call('/auth/logout', { cookie: admin.cookie, method: 'POST' });
+  assert.equal((await call('/dados', { cookie: admin.cookie })).status, 401);
+  const secureCookie = await new Promise((resolve, reject) => {
+    const req = request(base + '/auth/login', { method: 'POST', headers: { Host: 'painel.smartdevai.com.br', 'content-type': 'application/json', 'x-painel-request': '1' } }, res => {
+      res.resume(); res.on('end', () => resolve(res.headers['set-cookie']?.[0] || ''));
+    });
+    req.on('error', reject); req.end(JSON.stringify({ login: 'admin', senha: 'nova-senha-administrador' }));
+  });
+  assert.ok(secureCookie.includes('; Secure'), 'Cookie público precisa de Secure');
+  await criarAutenticacao(db, express.Router, 'senha-inicial-teste');
+  assert.equal((await call('/auth/login', { body: { login: 'admin', senha: 'senha-inicial-teste' } })).status, 401);
+  for (let i = 0; i < 10; i++) await call('/auth/login', { body: { login: 'inexistente', senha: 'senha-errada' } });
+  assert.equal((await call('/auth/login', { body: { login: 'inexistente', senha: 'senha-errada' } })).status, 429);
+  console.log('PASS: migração, senha obrigatória, cookies, CSRF, criação, duplicata, permissões, auditoria, revogação e logout.');
+} finally {
+  if (server) await new Promise(r => server.close(r));
+  if (!/^teste_auth_\d+$/.test(nome)) throw new Error('Banco inválido');
+  await db.dropDatabase(); await client.close();
+}

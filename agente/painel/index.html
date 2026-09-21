@@ -1,0 +1,1412 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>SmartDev AI | Atendimento</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Gabarito:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+
+<style>
+  /* Mesmos tokens da landing: o painel é a parte de dentro do mesmo produto. */
+  :root {
+    --ground:     #F7F6F3;
+    --surface:    #FFFFFF;
+    --raised:     #ECEAE4;
+    --line:       #DEDBD3;
+    --line-firm:  #B6B1A6;
+    --ink:        #1A1D24;
+    --muted:      #5D6270;
+    --deep:       #1E2A3A;
+    --deep-ink:   #F7F6F3;
+    --glow:       #C2762A;
+    --glow-soft:  #F6E3CC;
+    --bubble-out: #1E2A3A;
+    --bubble-in:  #ECEAE4;
+    --ok:         #2E7D52;
+    --ok-soft:    #DCEFE4;
+    --alerta:     #B3261E;
+    --alerta-soft:#F7DEDC;
+    --shadow:     0 1px 2px rgba(26, 29, 36, .05), 0 18px 40px -26px rgba(26, 29, 36, .45);
+
+    --f-display: "Gabarito", "Trebuchet MS", sans-serif;
+    --f-body:    "Archivo", "Helvetica Neue", Arial, sans-serif;
+    --f-mono:    "JetBrains Mono", ui-monospace, Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:     #0F141C;
+      --surface:    #161D27;
+      --raised:     #1E2733;
+      --line:       #2A3542;
+      --line-firm:  #465363;
+      --ink:        #E9ECF1;
+      --muted:      #9AA3B2;
+      --deep:       #E9ECF1;
+      --deep-ink:   #0F141C;
+      --glow:       #F2B77C;
+      --glow-soft:  #33261A;
+      --bubble-out: #2C3B4F;
+      --bubble-in:  #1E2733;
+      --ok:         #6BD19B;
+      --ok-soft:    #16301F;
+      --alerta:     #F2B8B5;
+      --alerta-soft:#3A1F1D;
+      --shadow:     0 1px 2px rgba(0, 0, 0, .5), 0 18px 40px -26px rgba(0, 0, 0, .95);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:     #0F141C;
+    --surface:    #161D27;
+    --raised:     #1E2733;
+    --line:       #2A3542;
+    --line-firm:  #465363;
+    --ink:        #E9ECF1;
+    --muted:      #9AA3B2;
+    --deep:       #E9ECF1;
+    --deep-ink:   #0F141C;
+    --glow:       #F2B77C;
+    --glow-soft:  #33261A;
+    --bubble-out: #2C3B4F;
+    --bubble-in:  #1E2733;
+    --ok:         #6BD19B;
+    --ok-soft:    #16301F;
+    --alerta:     #F2B8B5;
+    --alerta-soft:#3A1F1D;
+    --shadow:     0 1px 2px rgba(0, 0, 0, .5), 0 18px 40px -26px rgba(0, 0, 0, .95);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { height: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--f-body);
+    font-size: .9375rem;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    display: flex;
+    flex-direction: column;
+  }
+
+  h1, h2, h3 { margin: 0; font-family: var(--f-display); line-height: 1.15; }
+  p { margin: 0; }
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--glow); outline-offset: 2px; border-radius: 4px; }
+
+  button, input, textarea, select {
+    font: inherit; color: inherit;
+  }
+
+  .mono { font-family: var(--f-mono); }
+
+  .eyebrow {
+    font-family: var(--f-mono); font-size: .625rem; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--muted);
+  }
+
+  /* ---------- Topo ---------- */
+  .topo {
+    display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+    padding: .75rem clamp(.875rem, 2vw, 1.5rem);
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+    position: sticky; top: 0; z-index: 20;
+  }
+
+  .marca {
+    font-family: var(--f-display); font-weight: 700; font-size: 1.0625rem;
+    letter-spacing: -.01em; display: flex; align-items: center; gap: .5rem;
+  }
+
+  .marca span { font-weight: 500; color: var(--muted); font-size: .8125rem; font-family: var(--f-body); }
+
+  nav.abas { display: flex; gap: .25rem; margin-inline-start: .5rem; }
+
+  nav.abas button {
+    background: none; border: 1px solid transparent; border-radius: 999px;
+    padding: .3125rem .875rem; cursor: pointer; color: var(--muted);
+    font-size: .875rem; font-weight: 500;
+  }
+  nav.abas button:hover { background: var(--raised); color: var(--ink); }
+  nav.abas button[aria-current="true"] {
+    background: var(--deep); color: var(--deep-ink); border-color: var(--deep);
+  }
+  nav.abas button .contagem {
+    font-family: var(--f-mono); font-size: .6875rem; opacity: .7; margin-inline-start: .375rem;
+  }
+
+  .topo-fim { margin-inline-start: auto; display: flex; align-items: center; gap: .625rem; flex-wrap: wrap; }
+
+  .pill {
+    display: inline-flex; align-items: center; gap: .375rem;
+    border: 1px solid var(--line); border-radius: 999px;
+    padding: .1875rem .625rem; font-size: .75rem; color: var(--muted);
+    white-space: nowrap;
+  }
+  .pill .ponto { width: .5rem; height: .5rem; border-radius: 50%; background: var(--line-firm); flex: none; }
+  .pill.ok { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 40%, transparent); background: var(--ok-soft); }
+  .pill.ok .ponto { background: var(--ok); }
+  .pill.ruim { color: var(--alerta); border-color: color-mix(in srgb, var(--alerta) 40%, transparent); background: var(--alerta-soft); }
+  .pill.ruim .ponto { background: var(--alerta); }
+
+  .btn {
+    border: 1px solid var(--line-firm); background: var(--surface); color: var(--ink);
+    border-radius: 8px; padding: .375rem .75rem; cursor: pointer; font-size: .8125rem;
+    font-weight: 500; white-space: nowrap;
+  }
+  .btn:hover { background: var(--raised); }
+  .btn.forte { background: var(--deep); color: var(--deep-ink); border-color: var(--deep); }
+  .btn.forte:hover { opacity: .9; }
+  .btn.perigo:hover { background: var(--alerta-soft); color: var(--alerta); border-color: var(--alerta); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .btn.icone { padding: .375rem .5rem; }
+
+  /* ---------- Estrutura ---------- */
+  main { flex: 1; min-height: 0; display: flex; }
+  .vista { flex: 1; min-height: 0; display: none; }
+  .vista[data-ativa="true"] { display: flex; }
+
+  /* ---------- Conversas ---------- */
+  .lista {
+    width: min(24rem, 38vw); flex: none; border-inline-end: 1px solid var(--line);
+    display: flex; flex-direction: column; background: var(--surface); min-height: 0;
+  }
+
+  .busca { padding: .625rem .75rem; border-bottom: 1px solid var(--line); }
+  .busca input {
+    width: 100%; border: 1px solid var(--line); background: var(--ground);
+    border-radius: 8px; padding: .4375rem .6875rem; font-size: .875rem;
+  }
+  .busca input::placeholder { color: var(--muted); }
+
+  .lista-rolagem { overflow-y: auto; flex: 1; }
+
+  .item {
+    display: block; width: 100%; text-align: start; background: none;
+    border: none; border-bottom: 1px solid var(--line);
+    padding: .6875rem .875rem; cursor: pointer;
+  }
+  .item:hover { background: var(--raised); }
+  .item[aria-current="true"] { background: var(--glow-soft); box-shadow: inset 3px 0 0 var(--glow); }
+
+  .item-topo { display: flex; align-items: baseline; gap: .5rem; }
+  .item-nome { font-weight: 600; font-size: .9375rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .item-hora { margin-inline-start: auto; font-family: var(--f-mono); font-size: .6875rem; color: var(--muted); flex: none; }
+  .item-previa {
+    color: var(--muted); font-size: .8125rem; margin-top: .1875rem;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .item-tags { display: flex; gap: .3125rem; margin-top: .375rem; flex-wrap: wrap; }
+
+  .tag {
+    font-family: var(--f-mono); font-size: .625rem; letter-spacing: .04em;
+    border: 1px solid var(--line); border-radius: 4px; padding: .0625rem .3125rem;
+    color: var(--muted);
+  }
+  .tag.destaque { color: var(--glow); border-color: var(--glow); background: var(--glow-soft); }
+  .tag.pausa { color: var(--alerta); border-color: var(--alerta); background: var(--alerta-soft); }
+
+  /* ---------- Conversa aberta ---------- */
+  .conversa { flex: 1; min-width: 0; display: flex; flex-direction: column; min-height: 0; }
+
+  .conversa-topo {
+    display: flex; align-items: center; gap: .75rem; flex-wrap: wrap;
+    padding: .75rem clamp(.875rem, 2vw, 1.25rem); border-bottom: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .conversa-topo h2 { font-size: 1.0625rem; font-weight: 600; }
+  .conversa-topo .sub { font-size: .75rem; color: var(--muted); font-family: var(--f-mono); }
+  .conversa-acoes { margin-inline-start: auto; display: flex; gap: .5rem; flex-wrap: wrap; }
+
+  .ficha {
+    padding: .625rem clamp(.875rem, 2vw, 1.25rem); border-bottom: 1px solid var(--line);
+    background: var(--raised); font-size: .8125rem; color: var(--muted);
+    display: flex; gap: 1.25rem; flex-wrap: wrap;
+  }
+  .ficha b { color: var(--ink); font-weight: 600; }
+
+  .transcricao {
+    flex: 1; overflow-y: auto; padding: 1.25rem clamp(.875rem, 2vw, 1.25rem);
+    display: flex; flex-direction: column; gap: .5rem;
+  }
+
+  .dia {
+    align-self: center; font-family: var(--f-mono); font-size: .6875rem;
+    color: var(--muted); background: var(--raised); border-radius: 999px;
+    padding: .125rem .625rem; margin-block: .625rem;
+  }
+
+  .balao {
+    max-width: min(38rem, 78%); border-radius: 14px; padding: .5rem .75rem;
+    box-shadow: var(--shadow); white-space: pre-wrap; overflow-wrap: anywhere;
+  }
+  .balao.entrada { align-self: flex-start; background: var(--bubble-in); border-bottom-left-radius: 4px; }
+  .balao.saida {
+    align-self: flex-end; background: var(--bubble-out); color: var(--deep-ink);
+    border-bottom-right-radius: 4px;
+  }
+  .balao.humano { background: var(--glow); color: #1A1D24; }
+  .balao.sistema {
+    align-self: center; max-width: min(38rem, 92%); background: var(--surface);
+    border: 1px dashed var(--line-firm); color: var(--muted); font-size: .8125rem;
+  }
+
+  .balao .rodape {
+    display: flex; gap: .5rem; align-items: center; justify-content: flex-end;
+    font-family: var(--f-mono); font-size: .625rem; opacity: .65; margin-top: .25rem;
+  }
+  .balao.entrada .rodape { justify-content: flex-start; }
+
+  .responder {
+    border-top: 1px solid var(--line); background: var(--surface);
+    padding: .75rem clamp(.875rem, 2vw, 1.25rem);
+    display: flex; gap: .625rem; align-items: flex-end;
+  }
+  .responder textarea {
+    flex: 1; resize: none; border: 1px solid var(--line); background: var(--ground);
+    border-radius: 10px; padding: .5rem .75rem; min-height: 2.5rem; max-height: 9rem;
+    font-size: .9375rem; line-height: 1.45;
+  }
+  .responder .dica { font-size: .6875rem; color: var(--muted); font-family: var(--f-mono); }
+
+  .aviso-pausa {
+    padding: .5rem clamp(.875rem, 2vw, 1.25rem); font-size: .8125rem;
+    background: var(--glow-soft); color: var(--ink); border-top: 1px solid var(--glow);
+    display: flex; align-items: center; gap: .5rem; flex-wrap: wrap;
+  }
+
+  /* ---------- Vazio / carregando ---------- */
+  .vazio {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: .5rem; color: var(--muted); text-align: center; padding: 2rem;
+  }
+  .vazio strong { font-family: var(--f-display); font-size: 1.125rem; color: var(--ink); font-weight: 600; }
+
+  /* ---------- Listas de leads / agenda ---------- */
+  .paineis { flex: 1; overflow-y: auto; padding: clamp(1rem, 3vw, 2rem); width: 100%; }
+  .paineis-col { width: min(100%, 60rem); margin-inline: auto; display: flex; flex-direction: column; gap: 1.5rem; }
+
+  .cartao {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    padding: .875rem 1rem; box-shadow: var(--shadow);
+  }
+  .cartao + .cartao { margin-top: .625rem; }
+  .cartao-topo { display: flex; align-items: baseline; gap: .625rem; flex-wrap: wrap; }
+  .cartao-topo h3 { font-size: 1rem; font-weight: 600; }
+  .cartao-topo .quando { margin-inline-start: auto; font-family: var(--f-mono); font-size: .6875rem; color: var(--muted); }
+  .cartao dl { display: grid; grid-template-columns: auto 1fr; gap: .1875rem .75rem; margin: .5rem 0 0; font-size: .875rem; }
+  .cartao dt { color: var(--muted); font-size: .75rem; font-family: var(--f-mono); align-self: baseline; }
+  .cartao dd { margin: 0; }
+  .cartao-acoes { display: flex; gap: .5rem; margin-top: .75rem; flex-wrap: wrap; }
+
+  .secao-titulo { display: flex; align-items: baseline; gap: .625rem; margin-bottom: .625rem; }
+  .secao-titulo h2 { font-size: 1.25rem; font-weight: 600; }
+
+  .grade-status { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: .625rem; }
+  .metrica { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: .75rem .875rem; }
+  .metrica .valor { font-family: var(--f-display); font-size: 1.75rem; font-weight: 700; letter-spacing: -.02em; }
+  .metrica .rotulo { font-family: var(--f-mono); font-size: .625rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+
+  /* ---------- Entrada de senha ---------- */
+  .portao {
+    position: fixed; inset: 0; background: var(--ground); z-index: 50;
+    display: flex; align-items: center; justify-content: center; padding: 1.5rem;
+  }
+  .portao[hidden] { display: none; }
+  .portao form {
+    width: min(100%, 22rem); background: var(--surface); border: 1px solid var(--line);
+    border-radius: 14px; padding: 1.5rem; box-shadow: var(--shadow);
+    display: flex; flex-direction: column; gap: .75rem;
+  }
+  .portao h1 { font-size: 1.375rem; font-weight: 700; letter-spacing: -.02em; }
+  .portao p { color: var(--muted); font-size: .875rem; }
+  .portao input {
+    border: 1px solid var(--line); background: var(--ground); border-radius: 8px;
+    padding: .5rem .75rem; width: 100%;
+  }
+  .erro { color: var(--alerta); font-size: .8125rem; }
+  .erro:empty { display: none; }
+
+  /* ---------- Telas estreitas ---------- */
+  @media (max-width: 46rem) {
+    .lista { width: 100%; border-inline-end: none; }
+    .vista[data-ativa="true"].conversas { flex-direction: column; }
+    body[data-conversa-aberta="true"] .lista { display: none; }
+    body:not([data-conversa-aberta="true"]) .conversa { display: none; }
+    .topo { gap: .5rem; }
+    .balao { max-width: 88%; }
+  }
+  .voltar { display: none; }
+  @media (max-width: 46rem) { .voltar { display: inline-flex; } }
+  /* Área de trabalho com rolagem independente e editor sempre visível. */
+  body { height: 100dvh; overflow: hidden; }
+  main, .vista, .lista, .conversa { overflow: hidden; }
+  .topo { flex: none; min-height: 76px; padding: 1rem 1.5rem; }
+  .marca { gap: .7rem; }
+  .marca-simbolo { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 11px; background: var(--deep); color: var(--deep-ink); }
+  .marca span { border-left: 1px solid var(--line); padding-left: .8rem; }
+  .lista { width: clamp(280px, 28vw, 370px); }
+  .lista-titulo { padding: 1.5rem 1.25rem .8rem; }
+  .lista-titulo h1 { font-size: 1.8rem; letter-spacing: -.04em; margin: .35rem 0; }
+  .lista-titulo > p:last-child { color: var(--muted); font-size: .8rem; }
+  .busca { padding: .6rem 1.25rem 1rem; }
+  .busca input { padding: .7rem; border-radius: 10px; }
+  .busca select { margin-top: .7rem; width: 100%; padding: .5rem; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; font-size: .8rem; }
+  .lista-rolagem { padding: .5rem; }
+  .item { border: 0; border-radius: 12px; padding: 1rem; margin-bottom: .25rem; }
+  .item[aria-current="true"] { box-shadow: inset 3px 0 0 var(--glow); }
+  .item-previa { margin-top: .4rem; }
+  .tag { border-radius: 5px; padding: .1rem .35rem; }
+  .conversa-topo { min-height: 88px; padding: 1rem 1.5rem; flex: none; }
+  .conversa-topo h2 { font-size: 1.25rem; margin-bottom: .3rem; }
+  .ficha { flex: none; max-height: 110px; overflow-y: auto; padding: .8rem 1.5rem; background: var(--surface); gap: .65rem 1.25rem; }
+  .transcricao { min-height: 0; padding: 1.5rem clamp(1rem, 4vw, 4rem); gap: .75rem; background-image: radial-gradient(var(--line) .6px, transparent .6px); background-size: 18px 18px; }
+  .balao { flex: none; padding: .8rem 1rem; box-shadow: 0 2px 4px #00000008; line-height: 1.65; }
+  .balao.saida { color: #F7F6F3; }
+  .balao.humano { background: var(--glow-soft); color: var(--ink); border: 1px solid var(--glow); }
+  .balao.sistema { color: var(--muted); }
+  .dia { flex: none; }
+  .aviso-pausa { flex: none; padding: .65rem 1.5rem; font-size: .78rem; }
+  .aviso-pausa.ativo { background: var(--ok-soft); color: var(--ok); border-color: var(--line); }
+  #composer { flex: none; background: var(--surface); }
+  .responder { padding: 1rem 1.5rem .6rem; border-top: 0; }
+  .responder textarea { min-width: 0; padding: .85rem 1rem; border-radius: 12px; }
+  .responder .btn { min-height: 46px; padding-inline: 1.5rem; }
+  .erro-envio { padding: 0 1.5rem 1rem; }
+  .btn { min-height: 36px; border-radius: 9px; }
+  @media (max-width: 70rem) { .marca span { display: none; } .topo { gap: .6rem; } .topo-fim { gap: .35rem; } }
+  @media (max-width: 46rem) {
+    .topo { padding: .6rem .8rem; min-height: 0; }
+    .marca { font-size: .95rem; }
+    .topo-fim { margin-left: auto; }
+    .topo-fim .pill { display: none; }
+    nav.abas { order: 3; width: 100%; margin: 0; justify-content: space-between; }
+    nav.abas button { padding: .35rem .65rem; }
+    .lista { width: 100%; }
+    .conversa-topo { padding: .75rem; gap: .5rem; }
+    .conversa-acoes { width: 100%; margin: 0; }
+    .conversa-topo .sub { font-size: .65rem; }
+    .ficha { max-height: 72px; padding: .6rem .8rem; }
+    .responder { padding: .75rem .8rem .4rem; }
+    .responder .btn { padding-inline: .85rem; }
+    .aviso-pausa { padding: .55rem .8rem; }
+    .erro-envio { padding-inline: .8rem; }
+  }
+  .alerta-global { flex: none; padding: .65rem 1.25rem; background: var(--alerta-soft); color: var(--alerta); display: flex; align-items: center; gap: .75rem; justify-content: space-between; font-size: .82rem; border-bottom: 1px solid var(--line); }
+  .alerta-global[hidden] { display: none; }
+  .alerta-cartao { border-left: 4px solid var(--alerta); }
+  .alerta-cartao p { margin-top: .5rem; color: var(--muted); }
+  .alerta-cartao.atencao { border-left-color: var(--glow); }
+  [hidden] { display: none !important; }
+  .form-equipe { display: grid; gap: .7rem; }
+  .form-equipe input { width: 100%; padding: .65rem; background: var(--ground); border: 1px solid var(--line); border-radius: 8px; }
+  .atividade { flex: none; max-height: 130px; overflow: auto; padding: .5rem 1rem; background: var(--surface); font-size: .8rem; }
+  .atividade summary { cursor: pointer; color: var(--muted); }
+  @media (max-width: 46rem) {
+    nav.abas { gap: 0; overflow-x: auto; }
+    nav.abas button { padding: .35rem .45rem; font-size: .8rem; flex: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ---------- Senha ---------- -->
+<div class="portao" id="portao" hidden>
+  <form id="form-senha">
+    <p class="eyebrow">Painel do agente</p>
+    <h1>Entrar</h1>
+    <p>Acompanhe seus contatos e cuide de cada conversa.</p>
+    <input id="campo-login" aria-label="Usuário" placeholder="Usuário" autocomplete="username" required maxlength="64">
+    <input type="password" id="campo-senha" aria-label="Senha do painel" placeholder="Senha do painel" autocomplete="current-password" required>
+    <p class="erro" id="erro-senha"></p>
+    <button class="btn forte" type="submit">Entrar</button>
+  </form>
+  <form id="form-nova" hidden>
+    <h1>Defina sua senha pessoal</h1>
+    <p id="texto-nova">Use pelo menos 12 caracteres. A senha é individual.</p>
+    <input id="nome-conta" aria-label="Seu nome" placeholder="Seu nome" autocomplete="name" required maxlength="100">
+    <input type="password" id="senha-atual" aria-label="Senha atual" placeholder="Senha atual" autocomplete="current-password" required>
+    <input type="password" id="senha-nova" aria-label="Nova senha" placeholder="Nova senha (mínimo 12 caracteres)" autocomplete="new-password" minlength="12" maxlength="256" required>
+    <p class="erro" id="erro-nova" role="alert"></p>
+    <button class="btn forte" type="submit">Salvar senha</button>
+    <button class="btn" type="button" id="cancelar-nova">Voltar</button>
+    <button class="btn" type="button" id="sair-nova">Sair desta conta</button>
+  </form>
+</div>
+
+<!-- ---------- Topo ---------- -->
+<header class="topo">
+  <div class="marca"><b class="marca-simbolo">S</b> SmartDev AI <span>Atendimento</span></div>
+
+  <nav class="abas" id="abas">
+    <button data-aba="conversas" aria-current="true">Conversas<span class="contagem" id="c-conversas"></span></button>
+    <button data-aba="leads">Leads<span class="contagem" id="c-leads"></span></button>
+    <button data-aba="agenda">Agenda<span class="contagem" id="c-agenda"></span></button>
+    <button data-aba="prospeccao" id="aba-prospeccao" hidden>Prospecção</button>
+    <button data-aba="status">Status</button>
+    <button data-aba="equipe" id="aba-equipe" hidden>Equipe</button>
+  </nav>
+
+  <div class="topo-fim">
+    <button class="btn" id="minha-conta" hidden title="Alterar minha senha"></button>
+    <span class="pill" id="pill-whats"><span class="ponto"></span>WhatsApp</span>
+    <span class="pill" id="pill-llm"><span class="ponto"></span>LLM</span>
+    <button class="btn icone" id="btn-tema" title="Alternar tema">◐</button>
+    <button class="btn icone" id="btn-sair" title="Sair">⎋</button>
+  </div>
+</header>
+
+<div id="alerta-global" class="alerta-global" role="status" hidden><span id="alerta-resumo"></span><button class="btn" id="ver-alertas">Ver alertas</button></div>
+<main>
+  <!-- ---------- Conversas ---------- -->
+  <section class="vista conversas" data-vista="conversas" data-ativa="true">
+    <div class="lista">
+      <div class="lista-titulo"><p class="eyebrow">Central de atendimento</p><h1>Conversas</h1><p>Seu agente e sua equipe, juntos.</p></div>
+      <div class="busca">
+        <input type="search" id="busca" aria-label="Buscar conversas" placeholder="Buscar nome, número ou assunto…" autocomplete="off">
+        <select id="filtro-atendimento" aria-label="Filtrar atendimento"><option value="todos">Todos os atendimentos</option><option value="manual">Assumidos por você</option><option value="agente">Com o agente</option></select>
+      </div>
+      <div class="lista-rolagem" id="lista-conversas"></div>
+    </div>
+
+    <div class="conversa" id="conversa">
+      <div class="vazio">
+        <strong>Nenhuma conversa aberta</strong>
+        <p>Escolha um contato na lista para acompanhar o atendimento.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------- Leads ---------- -->
+  <section class="vista" data-vista="leads">
+    <div class="paineis"><div class="paineis-col" id="painel-leads"></div></div>
+  </section>
+
+  <!-- ---------- Agenda ---------- -->
+  <section class="vista" data-vista="agenda">
+    <div class="paineis"><div class="paineis-col" id="painel-agenda"></div></div>
+  </section>
+
+  <!-- ---------- Status ---------- -->
+  <section class="vista" data-vista="prospeccao">
+    <div class="paineis"><div class="paineis-col">
+      <div class="cartao"><h1>Prospecção</h1><p>Importe sua lista, revise os contatos e acompanhe as apresentações.</p>
+        <p>Fluxo: cadastre os prospectos, registre a autorização, configure a oferta e o horário, depois inicie. Nada é enviado apenas por cadastrar uma lista.</p>
+        <p id="pros-erro" role="alert" class="erro"></p>
+        <p id="pros-aviso" role="status"></p>
+      </div>
+      <div class="cartao"><h2>1. Importar contatos</h2>
+        <p>CSV ou Excel (.xlsx), até 2 MB e 1.000 contatos. No Excel, usamos a primeira aba. Colunas: empresa e telefone; opcionais: segmento e fonte. Um telefone com DDD por linha.</p>
+        <a href="/painel/modelo-prospeccao.csv" download>Baixar modelo de planilha</a>
+        <form id="pros-importar" class="pros-form">
+          <label>Arquivo <input id="pros-arquivo" type="file" accept=".csv,.xlsx" required></label>
+          <button class="btn" type="submit">Conferir arquivo</button>
+        </form>
+        <div id="pros-previa"></div>
+        <form id="pros-criar" class="pros-form" hidden>
+          <label>Nome da campanha <input id="pros-nome" maxlength="100" required placeholder="Clínicas da região"></label>
+          <button class="btn forte" type="submit">Importar contatos válidos</button>
+        </form>
+      </div>
+      <div class="cartao"><h2>2. Campanhas</h2>
+        <button class="btn" id="pros-atualizar" type="button">Atualizar campanhas e modelos</button>
+        <div id="pros-campanhas"></div>
+      </div>
+      <div class="cartao" id="pros-detalhe" hidden>
+        <h2 id="pros-titulo"></h2><p id="pros-resumo"></p>
+        <details><summary>Adicionar prospecto sem planilha</summary><form id="pros-contato-form" class="pros-form"><label>Empresa <input id="pros-contato-empresa" required maxlength="160"></label><label>Telefone com DDD <input id="pros-contato-telefone" required placeholder="5511999999999"></label><label>Segmento <input id="pros-contato-segmento" maxlength="160"></label><label>Fonte <input id="pros-contato-fonte" maxlength="160"></label><button class="btn" type="submit">Cadastrar prospecto</button></form></details>
+        <p id="pros-promocao" role="status"></p>
+        <form id="pros-oferta-form" class="pros-form">
+          <fieldset id="pros-oferta-campos" style="min-width:0;width:100%;border:1px solid var(--line);padding:16px">
+            <legend>Oferta e atendimento comercial</legend>
+            <label>Modo de atendimento <select id="pros-modo"><option value="assistido">Apresentação e atendimento humano</option><option value="automatico">Conversa comercial automática</option></select></label>
+            <button class="btn" id="pros-usar-lancamento" type="button">Usar oferta de lançamento</button>
+            <div id="pros-oferta-dados" class="pros-form" hidden>
+              <label>Nome da oferta <input id="pros-oferta-nome" maxlength="100"></label>
+              <label>O que está incluído <textarea id="pros-oferta-escopo" rows="5" maxlength="2000"></textarea></label>
+              <label>Implantação normal (R$) <input id="pros-oferta-implantacao" type="number" min="0" max="1000000" step="0.01"></label>
+              <label>Mensalidade (R$) <input id="pros-oferta-mensalidade" type="number" min="0" max="1000000" step="0.01"></label>
+              <label>Prazo e requisitos <textarea id="pros-oferta-prazo" rows="3" maxlength="500"></textarea></label>
+              <label>Condições, suporte e custos adicionais <textarea id="pros-oferta-condicoes" rows="6" maxlength="2000"></textarea></label>
+              <label>Link de contratação (opcional) <input id="pros-oferta-link" type="url" maxlength="1000" placeholder="https://..."></label>
+              <label><input id="pros-oferta-promocao" type="checkbox"> Lançamento: implantação de R$ 1.490 por R$ 990 para as dez primeiras contratações confirmadas; mensalidade de R$ 497.</label>
+              <p>Sem link, o agente registra o pedido e encaminha para você concluir. Na promoção, contrato, pagamento e disponibilidade sempre precisam de conferência humana.</p>
+              <h3>Dúvidas e objeções</h3><p>O agente seleciona as respostas cadastradas. Dúvidas sem resposta e negociações fora da oferta são encaminhadas para você.</p>
+              <div id="pros-oferta-faq"></div>
+              <button class="btn" id="pros-faq-adicionar" type="button">Adicionar pergunta e resposta</button>
+            </div>
+            <button class="btn forte" type="submit">Salvar oferta e modo</button>
+            <h3>Horário de envio</h3><p>Fuso: São Paulo. O agente só envia dentro dos dias e horários marcados.</p>
+            <div id="pros-janela-dias" class="pros-form"></div>
+            <label>Início <input id="pros-janela-inicio" type="time" value="09:00"></label>
+            <label>Fim <input id="pros-janela-fim" type="time" value="18:00"></label>
+          </fieldset>
+          <p id="pros-oferta-aviso" role="status">Configure antes de iniciar. A oferta fica bloqueada após o primeiro envio.</p>
+        </form>
+        <label>Apresentação aprovada no WhatsApp <select id="pros-modelo" aria-label="Modelo de apresentação"></select></label>
+        <label><input id="pros-risco-evolution" type="checkbox"> Confirmo que esta campanha pode usar a Evolution/Baileys não oficial, aceito risco de desconexão ou bloqueio e mantenho autorização dos destinatários.</label>
+        <p>Na API oficial, o modelo precisa estar aprovado pela Meta. No modo Evolution/Baileys, o texto configurado no servidor é enviado diretamente e a conexão não é oficial.</p>
+        <pre id="pros-texto" style="white-space:pre-wrap;overflow-wrap:anywhere"></pre>
+        <div class="pros-form"><button class="btn forte" id="pros-iniciar" type="button">Iniciar / retomar</button><button class="btn" id="pros-pausar" type="button">Pausar campanha</button></div>
+        <p>Aprovar um contato exige registrar a autorização dada pelo destinatário. Ter o telefone em uma lista pública não é autorização. Pausar interrompe novos envios e respostas; uma chamada já iniciada não pode ser desfeita. Retomar uma conversa exige nova mensagem do contato.</p>
+        <div id="pros-contatos"></div>
+      </div>
+    </div></div>
+  </section>
+  <section class="vista" data-vista="status">
+    <div class="paineis"><div class="paineis-col" id="painel-status"></div></div>
+  </section>
+  <section class="vista" data-vista="equipe">
+    <div class="paineis"><div class="paineis-col">
+      <div class="cartao"><h2>Adicionar atendente</h2><p>Cada pessoa recebe uma senha temporária e define a própria senha no primeiro acesso.</p>
+        <form id="form-equipe" class="form-equipe">
+          <input name="nome" aria-label="Nome do atendente" placeholder="Nome" required maxlength="100">
+          <input name="login" aria-label="Login do atendente" placeholder="Login (sem espaços)" required pattern="[a-zA-Z0-9._-]{3,64}">
+          <input name="senha" type="password" aria-label="Senha temporária" placeholder="Senha temporária (mínimo 12 caracteres)" required minlength="12" maxlength="256" autocomplete="new-password">
+          <button class="btn forte">Criar conta</button>
+        </form><p id="erro-equipe" class="erro" role="alert"></p>
+      </div>
+      <div id="usuarios-equipe"></div>
+      <div><h2>Atividade da equipe</h2><div id="auditoria-equipe"></div></div>
+    </div></div>
+  </section>
+</main>
+
+<style>
+  .pros-form { display:flex; flex-wrap:wrap; gap:12px; align-items:end; margin:16px 0; }
+  .pros-form[hidden] { display:none; }
+  .pros-form label { display:grid; gap:6px; flex:1; min-width:180px; }
+  .pros-form input, .pros-form textarea, .pros-form select, #pros-modelo { width:100%; max-width:100%; padding:10px; color:var(--ink); background:var(--raised); border:1px solid var(--line, #667); border-radius:8px; }
+  .pros-form textarea { resize:vertical; min-height:90px; }
+  .pros-form input[type="checkbox"] { width:auto; justify-self:start; }
+  #pros-oferta-dados, #pros-oferta-faq, #pros-oferta-faq .pros-form { width:100%; }
+  #pros-oferta-dados > label, #pros-oferta-faq label { flex-basis:100%; min-width:0; }
+  #pros-oferta-campos > label { margin-bottom:12px; }
+  #pros-oferta-campos:disabled { opacity:.75; }
+  .pros-form input::placeholder { color:var(--muted, #999); }
+  #pros-modelo { display:block; margin-top:8px; }
+  .pros-linha { border-top:1px solid var(--line, #ddd); padding:16px 0; overflow-wrap:anywhere; }
+  .pros-linha p { margin:6px 0; }
+  .pros-tabela { overflow:auto; max-height:320px; margin:12px 0; }
+  .pros-tabela table { border-collapse:collapse; width:100%; }
+  .pros-tabela td, .pros-tabela th { padding:8px; text-align:left; border-bottom:1px solid #ccc; }
+</style>
+<script src="/painel/prospeccao.js"></script>
+<script>
+(() => {
+  "use strict";
+
+  const TZ = "America/Sao_Paulo";
+  const CHAVE_SENHA = "painel:senha";
+  const CHAVE_TEMA = "painel:tema";
+
+  const S = {
+    usuario: null,
+    aba: "conversas",
+    conversas: [],
+    filtro: "",
+    aberta: null,      // número da conversa aberta
+    detalhe: null,     // conteúdo da conversa aberta
+    status: null,
+    leads: [],
+    agenda: null,
+    enviando: false,
+    rascunhos: {},
+    erros: {},
+    filtroAtendimento: "todos",
+    detalhePedido: 0,
+  };
+
+  const $ = (sel) => document.querySelector(sel);
+  const el = (id) => document.getElementById(id);
+
+  // localStorage falha em janela anônima e com cookies bloqueados; o painel
+  // continua funcionando, só esquece a senha ao recarregar.
+  const guardar = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
+  const ler = (k) => { try { return localStorage.getItem(k) || ""; } catch { return ""; } };
+  const apagar = (k) => { try { localStorage.removeItem(k); } catch {} };
+
+  // ---------- Formatação ----------
+  const nomeAcao = a => ({ login: 'Entrou no painel', alterar_senha: 'Alterou a própria senha', criar_usuario: 'Criou uma conta', redefinir_senha: 'Redefiniu uma senha', alterar_acesso: 'Alterou o acesso', assumir: 'Assumiu a conversa', devolver: 'Devolveu ao agente', responder: 'Enviou uma resposta', reiniciar_memoria: 'Reiniciou a memória', revisar_fila: 'Revisou uma tarefa', testar_ia: 'Testou a IA', recuperar_administrador: 'Recuperou o administrador' }[a] || a);
+  const fmtHora = new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: TZ });
+  const fmtDiaLongo = new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "2-digit", month: "long", timeZone: TZ });
+  const fmtDiaCurto = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", timeZone: TZ });
+
+  function hora(v) { return v ? fmtHora.format(new Date(v)) : ""; }
+
+  function haQuanto(v) {
+    if (!v) return "";
+    const seg = (Date.now() - new Date(v).getTime()) / 1000;
+    if (seg < 60) return "agora";
+    if (seg < 3600) return `${Math.floor(seg / 60)} min`;
+    if (seg < 86400) return `${Math.floor(seg / 3600)} h`;
+    if (seg < 172800) return "ontem";
+    return fmtDiaCurto.format(new Date(v));
+  }
+
+  function esc(s) {
+    return String(s ?? "").replace(/[&<>"']/g, (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
+    );
+  }
+
+  // O agente escreve em markdown do WhatsApp. Sem isto a conversa aparece
+  // salpicada de asteriscos, que é justamente o que você quer conferir.
+  // O ** vem antes do *: modelos grandes escrevem em markdown comum mesmo
+  // mandando para o WhatsApp, e só a regra do * deixaria asterisco sobrando.
+  function zap(texto) {
+    return esc(texto)
+      .replace(/\*\*(?=\S)([^\n]+?)(?<=\S)\*\*/g, "<b>$1</b>")
+      .replace(/\*(?=\S)([^*\n]+?)(?<=\S)\*/g, "<b>$1</b>")
+      .replace(/_(?=\S)([^_\n]+?)(?<=\S)_/g, "<i>$1</i>")
+      .replace(/~(?=\S)([^~\n]+?)(?<=\S)~/g, "<s>$1</s>")
+      .replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+  }
+
+  // ---------- API ----------
+  async function api(caminho, opcoes = {}) {
+    const resp = await fetch(`/api${caminho}`, {
+      ...opcoes,
+      headers: {
+        "x-painel-request": "1",
+        ...(opcoes.body ? { "content-type": "application/json" } : {}),
+        ...(opcoes.headers || {}),
+      },
+    });
+
+    if (resp.status === 401) {
+      pedirSenha("Entre com seu usuário e senha.");
+      throw new Error("nao autorizado");
+    }
+
+    const corpo = await resp.json().catch(() => ({}));
+    if (corpo.codigo === "trocar_senha") abrirTrocaSenha(true);
+    if (!resp.ok) throw new Error(corpo?.erro || `Erro ${resp.status}`);
+    return corpo;
+  }
+
+  // ---------- Portão de senha ----------
+  const prospeccaoUI = window.criarPainelProspeccao(api);
+  document.addEventListener('prospeccao:abrir-conversa', ev => { abrirConversa(ev.detail).catch(err => { el('pros-erro').textContent = err.message; }); });
+  function pedirSenha(msg) {
+    prospeccaoUI.limpar(); el('aba-prospeccao').hidden = true;
+    S.usuario = null;
+    S.rascunhos = {}; S.aberta = null; S.detalhe = null; S.conversas = [];
+    el('lista-conversas').innerHTML = ''; el('conversa').innerHTML = '';
+    el('usuarios-equipe').innerHTML = ''; el('auditoria-equipe').innerHTML = '';
+    el('minha-conta').hidden = true; el('aba-equipe').hidden = true;
+    S.aba = 'conversas';
+    document.querySelectorAll('#abas button').forEach(b => b.setAttribute('aria-current', String(b.dataset.aba === 'conversas')));
+    document.querySelectorAll('.vista').forEach(v => v.setAttribute('data-ativa', String(v.dataset.vista === 'conversas')));
+    apagar(CHAVE_SENHA);
+    el("form-senha").hidden = false;
+    el("form-nova").hidden = true;
+    el("erro-senha").textContent = msg || "";
+    el("portao").hidden = false;
+    document.querySelector('header').inert = true; document.querySelector('main').inert = true;
+    el("campo-login").focus();
+  }
+
+  el("form-senha").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const tentativa = el("campo-senha").value;
+    if (!tentativa) return;
+    try {
+      const r = await api("/auth/login", { method: "POST", body: JSON.stringify({ login: el("campo-login").value, senha: tentativa }) });
+      aceitarUsuario(r.usuario);
+      if (r.usuario.trocarSenha) el("senha-atual").value = tentativa;
+      el("campo-senha").value = "";
+      el("erro-senha").textContent = "";
+    } catch (err) {
+      if (String(err.message) !== "nao autorizado") {
+        el("erro-senha").textContent = err.message;
+      }
+    }
+  });
+
+  function aceitarUsuario(usuario) {
+    S.usuario = usuario;
+    el("aba-equipe").hidden = usuario.papel !== "admin";
+    el("aba-prospeccao").hidden = usuario.papel !== "admin";
+    el("minha-conta").hidden = false;
+    el("minha-conta").textContent = usuario.nome;
+    if (usuario.trocarSenha) return abrirTrocaSenha(true);
+    el("portao").hidden = true;
+    document.querySelector('header').inert = false; document.querySelector('main').inert = false;
+    iniciar();
+  }
+  function abrirTrocaSenha(obrigatoria = false) {
+    el("portao").hidden = false;
+    document.querySelector('header').inert = true; document.querySelector('main').inert = true;
+    el("form-senha").hidden = true;
+    el("form-nova").hidden = false;
+    el("cancelar-nova").hidden = obrigatoria;
+    el("erro-nova").textContent = "";
+    el("senha-atual").value = "";
+    el("senha-nova").value = "";
+    el("nome-conta").value = S.usuario?.nome || '';
+  }
+  el("minha-conta").addEventListener("click", () => abrirTrocaSenha());
+  el("cancelar-nova").addEventListener("click", () => { el("portao").hidden = true; el("form-nova").reset(); document.querySelector('header').inert = false; document.querySelector('main').inert = false; });
+  el('sair-nova').addEventListener('click', () => el('btn-sair').click());
+  el("form-nova").addEventListener("submit", async ev => {
+    ev.preventDefault();
+    try {
+      const r = await api("/auth/senha", { method: "POST", body: JSON.stringify({ nome: el('nome-conta').value, senhaAtual: el("senha-atual").value, novaSenha: el("senha-nova").value }) });
+      el("form-nova").reset(); aceitarUsuario(r.usuario);
+    } catch (err) { el("erro-nova").textContent = err.message; }
+  });
+  el("btn-sair").addEventListener("click", async () => {
+    try { await api("/auth/logout", { method: "POST" }); location.reload(); }
+    catch (err) { mostrarErro(err.message); }
+  });
+  el("ver-alertas").addEventListener("click", () => document.querySelector('#abas button[data-aba="status"]').click());
+
+  // ---------- Tema ----------
+  const temaGuardado = ler(CHAVE_TEMA);
+  if (temaGuardado) document.documentElement.dataset.theme = temaGuardado;
+
+  el("btn-tema").addEventListener("click", () => {
+    const escuroAgora =
+      document.documentElement.dataset.theme === "dark" ||
+      (!document.documentElement.dataset.theme &&
+        matchMedia("(prefers-color-scheme: dark)").matches);
+    const novo = escuroAgora ? "light" : "dark";
+    document.documentElement.dataset.theme = novo;
+    guardar(CHAVE_TEMA, novo);
+  });
+
+  // ---------- Abas ----------
+  el("abas").addEventListener("click", (ev) => {
+    const botao = ev.target.closest("button[data-aba]");
+    if (!botao) return;
+    S.aba = botao.dataset.aba;
+    document.querySelectorAll("#abas button").forEach((b) =>
+      b.setAttribute("aria-current", String(b.dataset.aba === S.aba))
+    );
+    document.querySelectorAll(".vista").forEach((v) =>
+      v.setAttribute("data-ativa", String(v.dataset.vista === S.aba))
+    );
+    if (S.aba === 'equipe') carregarEquipe().catch(err => { el('erro-equipe').textContent = err.message; });
+    if (S.aba === 'prospeccao') prospeccaoUI.abrir();
+    atualizar();
+  });
+
+  // ---------- Lista de conversas ----------
+  el("busca").addEventListener("input", (ev) => {
+    S.filtro = ev.target.value.trim().toLowerCase();
+    renderLista();
+  });
+
+  function combina(c) {
+    if (S.filtroAtendimento === "manual" && !c.pausado) return false;
+    if (S.filtroAtendimento === "agente" && c.pausado) return false;
+    if (!S.filtro) return true;
+    return [c.nome, c.numero, c.exibicao, c.empresa, c.necessidade, c.ultima]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase()
+      .includes(S.filtro);
+  }
+
+  function renderLista() {
+    const alvo = el("lista-conversas");
+    const visiveis = S.conversas.filter(combina);
+
+    if (visiveis.length === 0) {
+      alvo.innerHTML = `<div class="vazio"><p>${
+        S.conversas.length === 0
+          ? "Nenhuma conversa ainda. Assim que alguém escrever, aparece aqui."
+          : "Nada encontrado para essa busca."
+      }</p></div>`;
+      return;
+    }
+
+    alvo.innerHTML = visiveis
+      .map((c) => {
+        const tags = [
+          c.pausado ? '<span class="tag pausa">você assumiu</span>' : "",
+          c.temAgendamento ? '<span class="tag destaque">agendou</span>' : "",
+          c.temRecado ? '<span class="tag destaque">recado</span>' : "",
+          c.ehLead && !c.temAgendamento && !c.temRecado ? '<span class="tag">lead</span>' : "",
+        ].filter(Boolean).join("");
+
+        return `
+          <button class="item" data-numero="${esc(c.numero)}" aria-current="${c.numero === S.aberta}">
+            <div class="item-topo">
+              <span class="item-nome">${esc(c.nome || c.exibicao)}</span>
+              <span class="item-hora">${esc(haQuanto(c.atualizadoEm))}</span>
+            </div>
+            <div class="item-previa">${
+              c.ultimaRole === "assistant" ? "<b>·</b> " : ""
+            }${esc((c.ultima || "").slice(0, 160))}</div>
+            ${tags ? `<div class="item-tags">${tags}</div>` : ""}
+          </button>`;
+      })
+      .join("");
+  }
+
+  el("lista-conversas").addEventListener("click", (ev) => {
+    const item = ev.target.closest(".item");
+    if (!item) return;
+    abrirConversa(item.dataset.numero);
+  });
+
+  // ---------- Conversa aberta ----------
+  async function abrirConversa(numero) {
+    if (S.aberta !== numero) {
+      S.detalhe = null;
+      el("conversa").innerHTML = '<div class="vazio"><strong>Carregando conversa…</strong></div>';
+    }
+    S.aberta = numero;
+    document.body.dataset.conversaAberta = "true";
+    renderLista();
+    await carregarDetalhe(true);
+  }
+
+  async function carregarDetalhe(rolarAoFim) {
+    if (!S.aberta) return;
+    const numero = S.aberta;
+    const pedido = ++S.detalhePedido;
+    try {
+      const detalhe = await api(`/conversas/${numero}`);
+      if (numero !== S.aberta || pedido !== S.detalhePedido) return;
+      S.detalhe = detalhe;
+      renderConversa(rolarAoFim);
+    } catch (err) {
+      if (numero !== S.aberta || pedido !== S.detalhePedido) return;
+      if (String(err.message) === "nao autorizado") return;
+      if (S.detalhe) { mostrarErro("Não foi possível atualizar a conversa. Tentaremos novamente."); return; }
+      el("conversa").innerHTML = `<div class="vazio"><strong>Não deu para abrir</strong><p>${esc(err.message)}</p></div>`;
+    }
+  }
+
+  function renderConversa(rolarAoFim) {
+    const d = S.detalhe;
+    if (!d) return;
+
+    const anterior = $(".transcricao");
+    const scrollAnterior = anterior?.scrollTop || 0;
+    // Preserve o próprio elemento: texto, seleção, foco e composição do teclado.
+    const composerAnterior = el("composer");
+    const focoAnterior = document.activeElement;
+    const estavaNoFim =
+      !anterior || anterior.scrollHeight - anterior.scrollTop - anterior.clientHeight < 120;
+
+    const lead = d.lead || {};
+    const fichaItens = [
+      lead.nome && `<span><b>${esc(lead.nome)}</b></span>`,
+      lead.empresa && `<span>🏢 ${esc(lead.empresa)}${lead.ramo ? ` (${esc(lead.ramo)})` : ""}</span>`,
+      lead.necessidade && `<span>💡 ${esc(lead.necessidade)}</span>`,
+      lead.urgencia && lead.urgencia !== "nao_informada" && `<span>⏱ ${esc(lead.urgencia)}</span>`,
+      lead.agendamento &&
+        `<span>📅 ${esc(lead.agendamento.data || "")} ${esc(lead.agendamento.horario || "")} (${esc(lead.agendamento.modalidade || "")})</span>`,
+      lead.recado && `<span>🔔 ${esc(lead.recado.assunto || "")}</span>`,
+      d.contato?.tipo === "pessoal" && `<span>👤 pediu o contato pessoal</span>`,
+    ].filter(Boolean);
+
+    let ultimoDia = "";
+    const baloes = (d.mensagens || [])
+      .map((m) => {
+        let separador = "";
+        if (m.em) {
+          const dia = fmtDiaLongo.format(new Date(m.em));
+          if (dia !== ultimoDia) {
+            ultimoDia = dia;
+            separador = `<div class="dia">${esc(dia)}</div>`;
+          }
+        }
+
+        const classe =
+          m.via === "sistema"
+            ? "balao sistema"
+            : m.role === "user"
+            ? "balao entrada"
+            : m.via === "painel" || m.via === "whatsapp"
+            ? "balao saida humano"
+            : "balao saida";
+
+        const autor =
+          m.via === "whatsapp" ? "atendimento · WhatsApp" : m.via === "painel" ? (m.autor?.nome || "atendente") : m.via === "sistema" ? "aviso automático" : m.role === "user" ? "" : "agente";
+
+        const rodape =
+          autor || m.em
+            ? `<div class="rodape">${autor ? `<span>${esc(autor)}</span>` : ""}${
+                m.em ? `<span>${esc(hora(m.em))}</span>` : ""
+              }</div>`
+            : "";
+
+        return `${separador}<div class="${classe}">${zap(m.content)}${rodape}</div>`;
+      })
+      .join("");
+
+    el("conversa").innerHTML = `
+      <div class="conversa-topo">
+        <button class="btn icone voltar" id="btn-voltar" title="Voltar">←</button>
+        <div>
+          <h2>${esc(lead.nome || d.exibicao)}</h2>
+          <div class="sub">${esc(d.exibicao)} · <a href="${esc(d.link)}" target="_blank" rel="noopener">abrir no WhatsApp</a></div>
+        </div>
+        <div class="conversa-acoes">
+          <button class="btn ${d.pausado ? "forte" : ""}" id="btn-pausa">
+            ${d.pausado ? "Devolver ao agente" : "Assumir a conversa"}
+          </button>
+          <button class="btn perigo" id="btn-reset" title="Apaga a memória do modelo; o histórico do painel fica">Reiniciar memória</button>
+        </div>
+      </div>
+
+      ${fichaItens.length ? `<div class="ficha">${fichaItens.join("")}</div>` : ""}
+
+      <div class="transcricao">${
+        baloes || '<div class="vazio"><p>Sem mensagens registradas neste contato.</p></div>'
+      }</div>
+
+      ${
+        d.pausado
+          ? '<div class="aviso-pausa">⏸ A agente está pausada aqui — as mensagens que chegarem ficam sem resposta automática até você devolver.</div>'
+          : '<div class="aviso-pausa ativo">● Agente ativo · Assuma a conversa para atender sem respostas automáticas.</div>'
+      }
+
+      ${!d.pausado && d.estadoIA ? `<div class="aviso-pausa" role="status">${
+        d.estadoIA.fase === "aguardando" ? `A IA está aguardando disponibilidade. Nova tentativa após ${esc(hora(d.estadoIA.ate))}.` :
+        d.estadoIA.fase === "fila" ? "Mensagem na fila de atendimento da IA…" : "O agente está preparando uma resposta…"
+      }</div>` : ""}
+      ${(d.fila || []).filter(t => t.estado === "revisao").map(t => `<div class="aviso-pausa" role="alert">Uma mensagem precisa de revisão. Confira o histórico e atenda manualmente antes de liberar as próximas mensagens.<button class="btn resolver-fila" data-tarefa="${esc(t._id)}">Marcar como revisada</button></div>`).join("")}
+      <div id="composer">
+      <div class="responder">
+        <textarea id="campo-msg" aria-label="Sua resposta" rows="2" placeholder="Escreva sua resposta…"></textarea>
+        <button class="btn forte" id="btn-enviar">Enviar</button>
+      </div>
+      <div class="responder" style="border-top:none; padding-top:0">
+        <span class="dica">Enter envia · Shift+Enter quebra linha</span>
+      </div><p class="erro erro-envio" id="erro-envio" role="alert"></p></div>`;
+
+    if (d.auditoria?.length) {
+      const atividade = document.createElement('details');
+      atividade.className = 'atividade';
+      atividade.innerHTML = `<summary>Histórico de ações${d.responsavel ? ` · responsável: ${esc(d.responsavel.nome)}` : ''}</summary>${d.auditoria.map(a => `<p>${esc(hora(a.em))} · ${esc(a.usuario?.nome || 'Sistema')} · ${esc(nomeAcao(a.acao))} · ${esc(a.estado)}</p>`).join('')}`;
+      el('composer').before(atividade);
+    }
+
+    if (composerAnterior) {
+      el("composer").replaceWith(composerAnterior);
+      if (composerAnterior.contains(focoAnterior)) focoAnterior.focus({ preventScroll: true });
+    }
+
+    const trans = $(".transcricao");
+    if (trans && (rolarAoFim || estavaNoFim)) trans.scrollTop = trans.scrollHeight;
+    else if (trans) trans.scrollTop = scrollAnterior;
+
+    el("btn-voltar").addEventListener("click", () => {
+      document.body.dataset.conversaAberta = "false";
+    });
+    document.querySelectorAll('.resolver-fila').forEach(botao => botao.addEventListener('click', async () => {
+      if (!confirm('Você conferiu o histórico e resolveu este atendimento? Isto libera as próximas mensagens da fila, sem reenviar a anterior.')) return;
+      botao.disabled = true;
+      try {
+        await api(`/conversas/${d.numero}/fila/${botao.dataset.tarefa}/resolver`, { method: 'POST' });
+        await carregarDetalhe(false);
+      } catch (err) { mostrarErro(err.message); botao.disabled = false; }
+    }));
+
+    el("btn-pausa").addEventListener("click", async () => {
+      el("btn-pausa").disabled = true;
+      try {
+      await api(`/conversas/${d.numero}/pausa`, {
+        method: "POST",
+        body: JSON.stringify({ pausado: !d.pausado }),
+      });
+      await Promise.all([carregarDetalhe(false), carregarConversas()]);
+      } catch (err) { mostrarErro(err.message); }
+      finally { if (el("btn-pausa")) el("btn-pausa").disabled = false; }
+    });
+
+    el("btn-reset").addEventListener("click", async () => {
+      if (!confirm("Reiniciar a memória do modelo neste contato?\n\nEle esquece o que foi conversado e trata a pessoa como nova. O histórico aqui no painel continua.")) return;
+      await api(`/conversas/${d.numero}`, { method: "DELETE" });
+      await Promise.all([carregarDetalhe(false), carregarConversas()]);
+    });
+
+    const campo = el("campo-msg");
+    const rascunho = S.rascunhos[d.numero] || "";
+    if (campo.value !== rascunho) campo.value = rascunho;
+    campo.disabled = S.enviando === d.numero;
+    el("btn-enviar").disabled = Boolean(S.enviando);
+    el("btn-enviar").textContent = S.enviando === d.numero ? "Enviando…" : "Enviar";
+    el("erro-envio").textContent = S.erros[d.numero] || "";
+    if (composerAnterior) return;
+    campo.addEventListener("input", () => {
+      S.rascunhos[S.aberta] = campo.value;
+      campo.style.height = "auto";
+      campo.style.height = `${Math.min(campo.scrollHeight, 144)}px`;
+    });
+    campo.addEventListener("keydown", (ev) => {
+      if (ev.key === "Enter" && !ev.shiftKey && !ev.isComposing) {
+        ev.preventDefault();
+        enviar();
+      }
+    });
+    el("btn-enviar").addEventListener("click", enviar);
+  }
+
+  async function enviar() {
+    if (S.enviando) return;
+    const campo = el("campo-msg");
+    const texto = campo.value.trim();
+    if (!texto || !S.aberta) return;
+    const numero = S.aberta;
+
+    S.enviando = numero;
+    S.erros[numero] = "";
+    campo.disabled = true;
+    el("btn-enviar").disabled = true;
+    el("btn-enviar").textContent = "Enviando…";
+    el("erro-envio").textContent = "";
+    try {
+      await api(`/conversas/${numero}/mensagem`, {
+        method: "POST",
+        body: JSON.stringify({ texto }),
+      });
+      delete S.rascunhos[numero];
+    } catch (err) {
+      S.erros[numero] = `Não foi possível confirmar o envio: ${err.message}. Seu rascunho foi mantido; confira o histórico antes de tentar novamente.`;
+    } finally {
+      S.enviando = false;
+      if (S.detalhe) renderConversa(false);
+    }
+    await Promise.allSettled([carregarDetalhe(S.aberta === numero), carregarConversas()]);
+    if (S.aberta === numero) el("campo-msg")?.focus();
+  }
+
+  function mostrarErro(mensagem) {
+    if (!S.aberta) return;
+    S.erros[S.aberta] = mensagem;
+    if (el("erro-envio")) el("erro-envio").textContent = mensagem;
+  }
+
+  el("filtro-atendimento").addEventListener("change", (ev) => {
+    S.filtroAtendimento = ev.target.value;
+    renderLista();
+  });
+
+  // ---------- Leads ----------
+  function renderLeads() {
+    const rotuloAtendimento = {
+      o_dono: "o próprio dono",
+      um_funcionario: "um funcionário",
+      ninguem: "ninguém",
+      nao_informado: "",
+    };
+
+    el("painel-leads").innerHTML = `
+      <div>
+        <div class="secao-titulo"><h2>Leads</h2><span class="eyebrow">${S.leads.length} registrados</span></div>
+        ${
+          S.leads.length === 0
+            ? '<div class="cartao"><p>Nenhum lead capturado ainda.</p></div>'
+            : S.leads
+                .map(
+                  (l) => `
+          <div class="cartao">
+            <div class="cartao-topo">
+              <h3>${esc(l.nome || l.exibicao)}</h3>
+              <span class="quando">${esc(l.criadoEm ? fmtDiaCurto.format(new Date(l.criadoEm)) : "—")}</span>
+            </div>
+            <dl>
+              <dt>número</dt><dd class="mono">${esc(l.exibicao)}</dd>
+              ${l.necessidade ? `<dt>precisa</dt><dd>${esc(l.necessidade)}</dd>` : ""}
+              ${l.empresa ? `<dt>empresa</dt><dd>${esc(l.empresa)}${l.ramo ? ` (${esc(l.ramo)})` : ""}</dd>` : ""}
+              ${l.urgencia && l.urgencia !== "nao_informada" ? `<dt>urgência</dt><dd>${esc(l.urgencia)}</dd>` : ""}
+              ${
+                l.atendimentoHoje && rotuloAtendimento[l.atendimentoHoje]
+                  ? `<dt>hoje atende</dt><dd>${esc(rotuloAtendimento[l.atendimentoHoje])}</dd>`
+                  : ""
+              }
+              ${l.agendamento ? `<dt>agendou</dt><dd>${esc(l.agendamento.data || "")} às ${esc(l.agendamento.horario || "")}</dd>` : ""}
+              ${l.recado ? `<dt>recado</dt><dd>${esc(l.recado.assunto || "")}</dd>` : ""}
+            </dl>
+            <div class="cartao-acoes">
+              <button class="btn ir-conversa" data-numero="${esc(l.numero)}">Ver conversa</button>
+              <a class="btn" href="${esc(l.link)}" target="_blank" rel="noopener">WhatsApp</a>
+            </div>
+          </div>`
+                )
+                .join("")
+        }
+      </div>`;
+  }
+
+  // ---------- Agenda ----------
+  function renderAgenda() {
+    const a = S.agenda;
+    if (!a) return;
+
+    const futuros = a.agendamentos.filter((x) => !x.dataISO || x.dataISO >= a.hoje);
+    const passados = a.agendamentos.filter((x) => x.dataISO && x.dataISO < a.hoje);
+
+    const cartaoAgendamento = (x) => `
+      <div class="cartao">
+        <div class="cartao-topo">
+          <h3>${esc(x.nome || x.exibicao)}</h3>
+          <span class="quando">${esc(x.dataISO ? fmtDiaCurto.format(new Date(`${x.dataISO}T12:00:00`)) : x.data || "sem data")} · ${esc(x.horario || "")}</span>
+        </div>
+        <dl>
+          <dt>número</dt><dd class="mono">${esc(x.exibicao)}</dd>
+          <dt>formato</dt><dd>${esc(x.modalidade || "online")}</dd>
+          ${!x.notificado ? '<dt>aviso</dt><dd>⚠️ não chegou no seu WhatsApp</dd>' : ""}
+        </dl>
+        <div class="cartao-acoes">
+          <button class="btn ir-conversa" data-numero="${esc(x.numero)}">Ver conversa</button>
+          <a class="btn" href="${esc(x.link)}" target="_blank" rel="noopener">WhatsApp</a>
+        </div>
+      </div>`;
+
+    el("painel-agenda").innerHTML = `
+      <div>
+        <div class="secao-titulo"><h2>Agendamentos</h2><span class="eyebrow">${futuros.length} por vir</span></div>
+        ${futuros.length ? futuros.map(cartaoAgendamento).join("") : '<div class="cartao"><p>Nada agendado por enquanto.</p></div>'}
+      </div>
+
+      <div>
+        <div class="secao-titulo"><h2>Recados</h2><span class="eyebrow">${a.recados.length}</span></div>
+        ${
+          a.recados.length
+            ? a.recados
+                .map(
+                  (r) => `
+          <div class="cartao">
+            <div class="cartao-topo">
+              <h3>${esc(r.nome || r.exibicao)}</h3>
+              <span class="quando">${esc(r.criadoEm ? fmtDiaCurto.format(new Date(r.criadoEm)) : "—")}</span>
+            </div>
+            <dl>
+              <dt>assunto</dt><dd>${esc(r.assunto || "")}</dd>
+              <dt>número</dt><dd class="mono">${esc(r.exibicao)}</dd>
+              ${r.melhorHorario ? `<dt>horário</dt><dd>${esc(r.melhorHorario)}</dd>` : ""}
+              ${!r.notificado ? '<dt>aviso</dt><dd>⚠️ não chegou no seu WhatsApp</dd>' : ""}
+            </dl>
+            <div class="cartao-acoes">
+              <button class="btn ir-conversa" data-numero="${esc(r.numero)}">Ver conversa</button>
+              <a class="btn" href="${esc(r.link)}" target="_blank" rel="noopener">WhatsApp</a>
+            </div>
+          </div>`
+                )
+                .join("")
+            : '<div class="cartao"><p>Nenhum recado.</p></div>'
+        }
+      </div>
+
+      ${
+        passados.length
+          ? `<div>
+              <div class="secao-titulo"><h2>Já passaram</h2><span class="eyebrow">${passados.length}</span></div>
+              ${passados.map(cartaoAgendamento).join("")}
+            </div>`
+          : ""
+      }`;
+  }
+
+  // Atalho dos cartões para a conversa correspondente.
+  document.addEventListener("click", (ev) => {
+    const botao = ev.target.closest(".ir-conversa");
+    if (!botao) return;
+    document.querySelector('#abas button[data-aba="conversas"]').click();
+    abrirConversa(botao.dataset.numero);
+  });
+
+  // ---------- Status ----------
+  function renderStatus() {
+    const s = S.status;
+    if (!s) return;
+
+    const t = s.totais;
+    const horas = Math.floor(s.uptimeSegundos / 3600);
+    const min = Math.floor((s.uptimeSegundos % 3600) / 60);
+
+    el("painel-status").innerHTML = `
+      <div>
+        <div class="secao-titulo"><h2>Alertas operacionais</h2></div>
+        ${(s.alertas || []).length ? s.alertas.map(a => `<div class="cartao alerta-cartao ${a.nivel === "atencao" ? "atencao" : ""}"><h3>${esc(a.titulo)}</h3><p>${esc(a.descricao)}</p></div>`).join("") : '<div class="cartao"><p>Nenhum alerta operacional ativo.</p></div>'}
+        ${(s.aguardando || []).map(c => `<div class="cartao"><div class="cartao-topo"><h3>${esc(c.nome || c.numero)}</h3><span class="quando">Há ${Math.max(5, Math.floor((Date.now() - new Date(c.desde).getTime()) / 60000))} min</span></div><p>${c.pausado ? "Atendimento assumido por uma pessoa" : "Atendimento com o agente"}</p><div class="cartao-acoes"><button class="btn ir-conversa" data-numero="${esc(c.numero)}">Abrir conversa</button></div></div>`).join("")}
+      </div>
+      <div>
+        <div class="secao-titulo"><h2>Como está a agente</h2></div>
+        <div class="grade-status">
+          <div class="metrica"><div class="valor">${s.fila?.pendentes || 0}</div><div class="rotulo">mensagens na fila</div></div>
+          <div class="metrica"><div class="valor">${s.fila?.processando || 0}</div><div class="rotulo">em processamento</div></div>
+          <div class="metrica"><div class="valor">${s.fila?.revisao || 0}</div><div class="rotulo">precisam de revisão</div></div>
+          <div class="metrica"><div class="valor">${t.conversas}</div><div class="rotulo">conversas</div></div>
+          <div class="metrica"><div class="valor">${t.leads}</div><div class="rotulo">leads</div></div>
+          <div class="metrica"><div class="valor">${t.agendamentos}</div><div class="rotulo">agendamentos</div></div>
+          <div class="metrica"><div class="valor">${t.recados}</div><div class="rotulo">recados</div></div>
+        </div>
+      </div>
+
+      <div class="cartao">
+        <dl>
+          <dt>WhatsApp</dt>
+          <dd>${s.whatsapp.conectado ? "✅ conectado" : `❌ ${esc(s.whatsapp.estado)}`}${
+            s.whatsapp.detalhe ? ` — ${esc(s.whatsapp.detalhe)}` : ""
+          }</dd>
+          <dt>instância</dt><dd class="mono">${esc(s.instancia)}</dd>
+          <dt>modelo</dt><dd class="mono">${esc(s.llm.provedor)} / ${esc(s.llm.modelo)}</dd>
+          <dt>chave do LLM</dt><dd>${s.llm.chaveConfigurada ? "✅ configurada" : "❌ faltando — a agente não consegue responder"}</dd>
+          <dt>avisos p/ você</dt><dd>${s.avisos.adminConfigurado ? "✅ ADMIN_NUMBER definido" : "⚠️ ADMIN_NUMBER vazio — você não recebe aviso de lead"}</dd>
+          <dt>contato pessoal</dt><dd>${s.avisos.contatoPessoalConfigurado ? "✅ definido" : "⚠️ vazio — a agente não consegue repassar seu contato"}</dd>
+          <dt>no ar há</dt><dd>${horas}h ${min}min</dd>
+          <dt>última mensagem</dt><dd>${s.ultimaMensagemEm ? `${esc(fmtDiaCurto.format(new Date(s.ultimaMensagemEm)))} às ${esc(hora(s.ultimaMensagemEm))}` : "—"}</dd>
+        </dl>
+        <div class="cartao-acoes">
+          <button class="btn" id="btn-teste">Testar o cérebro</button>
+          <span id="res-teste" class="mono" style="font-size:.75rem; align-self:center; color:var(--muted)"></span>
+        </div>
+      </div>`;
+
+    el("btn-teste").addEventListener("click", async () => {
+      const saida = el("res-teste");
+      saida.textContent = "perguntando…";
+      el("btn-teste").disabled = true;
+      try {
+        const r = await api("/status/teste-llm", { method: "POST" });
+        saida.textContent = r.ok
+          ? `✅ respondeu em ${r.ms} ms: "${r.resposta}"`
+          : `❌ ${r.erro}`;
+      } catch (err) {
+        saida.textContent = `❌ ${err.message}`;
+      } finally {
+        const b = el("btn-teste");
+        if (b) b.disabled = false;
+      }
+    });
+  }
+
+  // ---------- Indicadores do topo ----------
+  function renderPills() {
+    const s = S.status;
+    const whats = el("pill-whats");
+    const llm = el("pill-llm");
+    const alertas = s?.alertas || [];
+    el("alerta-global").hidden = !alertas.length;
+    el("alerta-resumo").textContent = alertas.length ? `${alertas[0].titulo}${alertas.length > 1 ? ` · mais ${alertas.length - 1} alerta(s)` : ""}` : "";
+
+    if (!s) {
+      whats.className = "pill";
+      llm.className = "pill";
+      return;
+    }
+
+    whats.className = `pill ${s.whatsapp.conectado ? "ok" : "ruim"}`;
+    whats.innerHTML = `<span class="ponto"></span>WhatsApp ${
+      s.whatsapp.conectado ? "conectado" : esc(s.whatsapp.estado)
+    }`;
+
+    llm.className = `pill ${s.llm.chaveConfigurada ? "ok" : "ruim"}`;
+    llm.innerHTML = `<span class="ponto"></span>${esc(s.llm.provedor)}`;
+  }
+
+  // ---------- Carregamento ----------
+  async function carregarEquipe() {
+    const [usuarios, auditoria] = await Promise.all([api('/auth/usuarios'), api('/auth/auditoria')]);
+    el('usuarios-equipe').innerHTML = usuarios.map(u => `<div class="cartao"><h3>${esc(u.nome)}</h3><p>${esc(u.login)} · ${u.papel === 'admin' ? 'Administrador' : 'Atendente'} · ${u.ativo ? 'Ativo' : 'Desativado'}</p>${u.papel === 'atendente' ? `<div class="cartao-acoes"><button class="btn alterar-usuario" data-id="${esc(u.id)}" data-ativo="${!u.ativo}">${u.ativo ? 'Desativar acesso' : 'Reativar acesso'}</button></div><form class="form-equipe reset-usuario" data-id="${esc(u.id)}"><input type="password" name="senha" aria-label="Nova senha temporária para ${esc(u.nome)}" placeholder="Nova senha temporária" minlength="12" maxlength="256" autocomplete="new-password" required><button class="btn">Redefinir senha</button></form>` : ''}</div>`).join('');
+    el('auditoria-equipe').innerHTML = auditoria.map(a => `<div class="cartao"><b>${esc(a.usuario?.nome || 'Sistema')}</b> · ${esc(nomeAcao(a.acao))}<p>${esc(fmtDiaCurto.format(new Date(a.em)))} ${esc(hora(a.em))} · ${esc(a.estado)}${a.numero ? ` · ${esc(a.numero)}` : ''}</p></div>`).join('') || '<p>Nenhuma ação registrada.</p>';
+  }
+  el('form-equipe').addEventListener('submit', async ev => {
+    ev.preventDefault();
+    const form = ev.currentTarget;
+    const botao = form.querySelector('button'); botao.disabled = true;
+    try {
+      await api('/auth/usuarios', { method: 'POST', body: JSON.stringify(Object.fromEntries(new FormData(form))) });
+      form.reset(); el('erro-equipe').textContent = ''; await carregarEquipe();
+    } catch (err) { el('erro-equipe').textContent = err.message; }
+    finally { botao.disabled = false; }
+  });
+  el('usuarios-equipe').addEventListener('click', async ev => {
+    const botao = ev.target.closest('.alterar-usuario'); if (!botao) return;
+    botao.disabled = true;
+    try {
+      await api(`/auth/usuarios/${botao.dataset.id}`, { method: 'PATCH', body: JSON.stringify({ ativo: botao.dataset.ativo === 'true' }) });
+      await carregarEquipe();
+    } catch (err) { el('erro-equipe').textContent = err.message; botao.disabled = false; }
+  });
+  el('usuarios-equipe').addEventListener('submit', async ev => {
+    const form = ev.target.closest('.reset-usuario'); if (!form) return;
+    ev.preventDefault(); const botao = form.querySelector('button'); botao.disabled = true;
+    try {
+      await api(`/auth/usuarios/${form.dataset.id}`, { method: 'PATCH', body: JSON.stringify({ senha: new FormData(form).get('senha') }) });
+      await carregarEquipe();
+    } catch (err) { el('erro-equipe').textContent = err.message; botao.disabled = false; }
+  });
+  async function carregarConversas() {
+    S.conversas = await api("/conversas");
+    el("c-conversas").textContent = S.conversas.length || "";
+    renderLista();
+  }
+
+  async function atualizar() {
+    if (!S.usuario || S.usuario.trocarSenha) return;
+    try {
+      const tarefas = [
+        api("/status").then((s) => {
+          S.status = s;
+          el("c-leads").textContent = s.totais.leads || "";
+          el("c-agenda").textContent = s.totais.agendamentos + s.totais.recados || "";
+          renderPills();
+          if (S.aba === "status") renderStatus();
+        }).catch(err => {
+          if (err.message !== "nao autorizado") {
+            el("alerta-global").hidden = false;
+            el("alerta-resumo").textContent = "Não foi possível atualizar o status. A conexão com o agente precisa ser verificada.";
+          }
+          throw err;
+        }),
+        carregarConversas(),
+      ];
+
+      if (S.aba === "leads") {
+        tarefas.push(api("/leads").then((l) => { S.leads = l; renderLeads(); }));
+      }
+      if (S.aba === "agenda") {
+        tarefas.push(api("/agenda").then((a) => { S.agenda = a; renderAgenda(); }));
+      }
+      if (S.aba === "prospeccao" && S.usuario?.papel === "admin") tarefas.push(prospeccaoUI.atualizar());
+      if (S.aberta) tarefas.push(carregarDetalhe(false));
+
+      await Promise.all(tarefas);
+    } catch (err) {
+      if (String(err.message) !== "nao autorizado") console.error("[painel]", err);
+    }
+  }
+
+  let timer = null;
+  function iniciar() {
+    atualizar();
+    if (timer) clearInterval(timer);
+    // 5s é curto o bastante para acompanhar uma conversa acontecendo e leve o
+    // bastante para o Mongo local nem sentir.
+    timer = setInterval(() => {
+      if (!document.hidden) atualizar();
+    }, 5000);
+  }
+
+  // Voltar para a aba recarrega na hora, em vez de esperar o próximo ciclo.
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden && S.usuario) atualizar();
+  });
+
+  // ---------- Início ----------
+  apagar(CHAVE_SENHA);
+  api('/auth/me').then(r => aceitarUsuario(r.usuario)).catch(err => {
+    if (err.message !== 'nao autorizado') pedirSenha('Não foi possível conectar ao painel. Tente novamente.');
+  });
+})();
+</script>
+</body>
+</html>

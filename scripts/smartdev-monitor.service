@@ -1,0 +1,10 @@
+[Unit]
+Description=Verifica infraestrutura, WhatsApp e painel publico SmartDev
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+UMask=0077
+ExecStart=/usr/bin/python3 /opt/smartdev/scripts/monitorar-agente.py
+TimeoutStartSec=240

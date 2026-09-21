@@ -1,0 +1,17 @@
+import fs from 'node:fs';
+import { createRequire } from 'node:module';
+import { criarAutenticacao } from '../agente/autenticacao.mjs';
+const require = createRequire('/app/package.json');
+const express = require('express'); const { MongoClient } = require('mongodb');
+const client = new MongoClient('mongodb://mongo:27017'); await client.connect();
+const db = client.db(`teste_auth_browser_${Date.now()}`);
+const auth = await criarAutenticacao(db, express.Router, 'senha-inicial-teste');
+const app = express(); app.use(express.json());
+app.get('/painel/', (req, res) => res.type('html').send(fs.readFileSync(new URL('../agente/painel/index.html', import.meta.url), 'utf8')));
+app.use('/api', auth.csrf); app.use('/api/auth', auth.router);
+app.use('/api', auth.autenticar, auth.acessoCompleto, auth.auditar);
+app.get('/api/status', (req, res) => res.json({ totais: { conversas: 0, leads: 0, agendamentos: 0, recados: 0 }, whatsapp: { conectado: true }, llm: { provedor: 'teste', chaveConfigurada: true }, avisos: {}, uptimeSegundos: 1, alertas: [], aguardando: [] }));
+app.get('/api/conversas', (req, res) => res.json([]));
+app.use((err, req, res, next) => res.status(500).json({ erro: err.message }));
+const server = app.listen(3102, '0.0.0.0');
+process.once('SIGTERM', async () => { server.close(); await db.dropDatabase(); await client.close(); process.exit(0); });

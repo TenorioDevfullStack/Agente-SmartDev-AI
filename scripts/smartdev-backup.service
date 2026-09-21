@@ -1,0 +1,12 @@
+[Unit]
+Description=Backup criptografado SmartDev para R2
+OnFailure=smartdev-alerta@smartdev-backup.service
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+UMask=0077
+ExecStart=/bin/bash /opt/smartdev/scripts/backup-vps.sh
+TimeoutStartSec=30min

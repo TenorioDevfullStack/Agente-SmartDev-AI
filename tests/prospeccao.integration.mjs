@@ -1,0 +1,76 @@
+import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
+import fs from 'node:fs/promises';
+import { fixture } from './prospeccao-fixture.mjs';
+import { importarArquivo, telefoneBR, lerCSV, validarLinhas } from '../agente/prospeccao-importacao.mjs';
+import { classificarResposta, emHorarioComercial, criarProspeccao } from '../agente/prospeccao.mjs';
+import { criarTransporteProspeccao } from '../agente/prospeccao-transporte.mjs';
+const require = createRequire(new URL('../agente/package.json', import.meta.url));
+const ExcelJS = require('exceljs');
+
+assert.equal(telefoneBR('(11) 99999-0001'), '5511999990001');
+assert.equal(telefoneBR('(11) 99999-0001 / (11) 99999-0002'), null);
+assert.equal(telefoneBR('1.199990001E10'), null);
+assert.equal(validarLinhas(lerCSV('empresa;telefone\n"A; B";11999990001\nB;11999990001'))[1].erro, 'Telefone repetido no arquivo');
+const wb = new ExcelJS.Workbook(); wb.addWorksheet('Leads').addRows([['empresa','telefone'], ['Clínica Á', '11999990001']]);
+assert.equal((await importarArquivo('teste.xlsx', Buffer.from(await wb.xlsx.writeBuffer())))[0].empresa, 'Clínica Á');
+wb.worksheets[0].getCell('A2').value = { formula: '1+1', result: 2 };
+await assert.rejects(() => importarArquivo('formula.xlsx', Buffer.from([])));
+const formulas = Buffer.from(await wb.xlsx.writeBuffer()); await assert.rejects(() => importarArquivo('formula.xlsx', formulas), /fórmulas/);
+const listaReal = await importarArquivo('clinicas.csv', await fs.readFile(new URL('../comercial/leads-clinicas-2026-09-13.csv', import.meta.url)));
+assert.equal(listaReal.length, 10); assert.equal(listaReal.filter(l => !!l.erro).length, 3);
+assert.equal(classificarResposta('Digite 1 para consultas'), 'provavel_bot');
+assert.equal(classificarResposta('Não temos interesse'), 'nao_contatar');
+assert.equal(classificarResposta('Pode apresentar'), 'interessado');
+assert.equal(classificarResposta('Olá'), 'respondeu');
+assert.equal(emHorarioComercial(new Date('2026-09-13T15:00:00Z')), false);
+console.log('PASS: CSV, Excel, fórmulas, telefones múltiplos, duplicatas, lista real e classificação.');
+
+let posts = 0;
+const t = criarTransporteProspeccao({ http: { get: async url => ({ data: url.includes('fetchInstances') ? [{ name: 'teste', integration: 'WHATSAPP-BUSINESS' }] : { data: [{ name: 'm', language: 'pt_BR', category: 'MARKETING', status: 'APPROVED', components: [{ type: 'BODY', text: 'Olá {{1}}' }] }] } }), post: async (_url, body) => { posts++; assert.equal(body.components[0].parameters[0].text, 'Clínica'); return { data: { key: { id: 'id' } } }; } }, url: 'http://simulado', instance: 'teste', apiKey: '', registrarId: async () => {}, pendentes: new Map() });
+assert.equal((await t.enviar('5511999990001', await t.modelo('m','pt_BR'), 'Clínica')).texto, 'Olá Clínica'); assert.equal(posts, 1);
+
+const f = await fixture(); let cookie;
+const req = async (path, body, method = 'POST', extra = {}) => {
+  const r = await fetch(f.url + '/api' + path, { method, headers: { 'content-type': 'application/json', 'x-painel-request': '1', ...(cookie ? { cookie } : {}), ...extra }, ...(body === undefined ? {} : { body: typeof body === 'string' || Buffer.isBuffer(body) ? body : JSON.stringify(body) }) });
+  if (r.headers.get('set-cookie')) cookie = r.headers.get('set-cookie').split(';')[0];
+  return { status: r.status, data: await r.json() };
+};
+try {
+  assert.equal((await req('/prospeccao', undefined, 'GET')).status, 401);
+  assert.equal((await req('/auth/login', { login: 'admin', senha: 'senha-teste-inicial' })).status, 200);
+  const csv = 'empresa;telefone\nClínica A;11999990001\nClínica B;11999990002\nClínica C;11999990003';
+  const p = await req('/prospeccao/previa', csv, 'POST', { 'content-type': 'application/octet-stream', 'x-arquivo-nome': 'leads.csv' }); assert.equal(p.status, 200);
+  const c = await req('/prospeccao/campanhas', { previaId: p.data.id, nome: 'Teste' }); assert.equal(c.status, 201);
+  const id = c.data.id;
+  const semCsrf = await fetch(f.url + '/api/prospeccao/campanhas/' + id + '/iniciar', { method: 'POST', headers: { cookie, 'content-type': 'application/json' }, body: '{}' });
+  assert.equal(semCsrf.status, 403);
+  assert.equal((await req(`/prospeccao/campanhas/${id}/iniciar`, {})).status, 400);
+  assert.equal((await req('/prospeccao/contatos/5511999990001', { acao: 'aprovar', evidencia: 'sim' }, 'PATCH')).status, 400);
+  for (const numero of ['5511999990001','5511999990002','5511999990003']) assert.equal((await req(`/prospeccao/contatos/${numero}`, { acao: 'aprovar', evidencia: 'Autorização fictícia em teste isolado' }, 'PATCH')).status, 200);
+  await req(`/prospeccao/campanhas/${id}/iniciar`, { modeloNome: 'm', modeloIdioma: 'pt_BR', riscoEvolution: true });
+  f.servico.iniciar(); await Promise.all([f.servico.executar(), f.servico.executar()]); assert.equal(f.enviados.length, 1);
+  await req(`/prospeccao/campanhas/${id}/pausar`, {}); f.avancar(); await f.servico.executar(); assert.equal(f.enviados.length, 1);
+  assert.equal(await f.servico.receber('5511999990001', 'Digite 1'), true);
+  assert.equal((await f.db.collection('prospeccao_contatos').findOne({ _id: '5511999990001' })).estado, 'provavel_bot');
+  await f.servico.receber('5511999990001', 'Não tenho interesse');
+  await f.servico.receber('5511999990001', 'Olá');
+  assert.equal((await f.db.collection('prospeccao_contatos').findOne({ _id: '5511999990001' })).estado, 'nao_contatar');
+  assert.equal((await req('/prospeccao/contatos/5511999990001', { acao: 'aprovar', evidencia: 'Não deve ser permitido' }, 'PATCH')).status, 400);
+  const repetida = await req('/prospeccao/previa', csv, 'POST', { 'content-type': 'application/octet-stream', 'x-arquivo-nome': 'leads.csv' }); assert.ok(repetida.data.linhas.every(l => l.erro));
+  await req(`/prospeccao/campanhas/${id}/iniciar`, {}); f.falhar(); await f.servico.executar(); assert.equal(f.enviados.length, 2);
+  assert.equal((await f.db.collection('prospeccao_contatos').findOne({ _id: '5511999990002' })).estado, 'revisao');
+  f.avancar(); await f.servico.executar(); assert.equal(f.enviados.length, 2);
+  await f.db.collection('prospeccao_contatos').updateOne({ _id: '5511999990003' }, { $set: { estado: 'enviando' } });
+  await f.db.collection('prospeccao_campanhas').updateOne({ _id: id }, { $set: { estado: 'ativa' } });
+  const novo = criarProspeccao(f.db, { transporte: f.transporte, registrarSaida: f.registrarSaida }); await novo.preparar();
+  assert.equal((await f.db.collection('prospeccao_contatos').findOne({ _id: '5511999990003' })).estado, 'revisao');
+  assert.equal((await f.db.collection('prospeccao_campanhas').findOne({ _id: id })).estado, 'pausada');
+  await f.db.collection('prospeccao_contatos').insertOne({ _id: '5511999990004', estado: 'aprovado', autorizado: true });
+  assert.equal(await f.servico.receber('5511999990004', 'Não mande mensagens'), true);
+  assert.equal((await f.db.collection('prospeccao_contatos').findOne({ _id: '5511999990004' })).autorizado, false);
+  // Revogar o papel na sessão impede acesso à rota de administração.
+  await f.db.collection('painel_usuarios').updateOne({ _id: 'administrador-inicial' }, { $set: { papel: 'atendente' } });
+  assert.equal((await req('/prospeccao', undefined, 'GET')).status, 403);
+  console.log('PASS: autenticação, importação persistida, autorização, concorrência, pausa, bot, recusa, deduplicação, falha incerta e reinício.');
+} finally { await f.fechar(); }

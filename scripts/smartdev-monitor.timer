@@ -1,0 +1,11 @@
+[Unit]
+Description=Verifica SmartDev a cada dois minutos
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=2min
+AccuracySec=10s
+Unit=smartdev-monitor.service
+
+[Install]
+WantedBy=timers.target

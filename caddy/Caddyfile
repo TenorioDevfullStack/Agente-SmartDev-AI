@@ -1,0 +1,22 @@
+# Porta de entrada do túnel — é este proxy, e não o agente, que o cloudflared
+# enxerga. Sem TLS de propósito: quem termina o HTTPS é o Cloudflare, e daqui
+# até o agente o tráfego não sai da rede interna do Compose.
+:80 {
+	# Allowlist do que existe para a internet. Tudo fora dela cai no 404 lá
+	# embaixo — a começar por /webhook, que não tem autenticação nenhuma
+	# (server.ts responde 200 e processa). Exposto, ele deixaria qualquer um
+	# forjar mensagem de qualquer número, inclusive a do ADMIN_NUMBER.
+	@publico path /painel /painel/* /api/*
+	handle @publico {
+		reverse_proxy agente:3000
+	}
+
+	# Conveniência: digitar só o domínio já abre o painel.
+	handle / {
+		redir * /painel/ 308
+	}
+
+	handle {
+		respond "Não encontrado" 404
+	}
+}

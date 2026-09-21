@@ -1,0 +1,104 @@
+# Fixa o nome do projeto. Sem isto o Compose usaria o nome da pasta, e mover o
+# projeto criaria volumes novos e vazios — perdendo a sessão do WhatsApp, o
+# Mongo e o Postgres, que vivem em volumes com o prefixo "agente-whatsapp_".
+name: agente-whatsapp
+
+services:
+  evolution-api:
+    image: evoapicloud/evolution-api:v2.3.7
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - AUTHENTICATION_API_KEY=${AUTH_KEY}
+      - DATABASE_ENABLED=true
+      - DATABASE_PROVIDER=postgresql
+      - DATABASE_CONNECTION_URI=postgresql://postgres:postgres@postgres:5432/evolution
+      - DATABASE_SAVE_DATA_INSTANCE=true
+      - CACHE_REDIS_ENABLED=true
+      - CACHE_REDIS_URI=redis://redis:6379/0
+      - CACHE_REDIS_PREFIX_KEY=evolution
+      - CACHE_LOCAL_ENABLED=false
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - evolution_instances:/evolution/instances
+
+  agente:
+    build: ./agente
+    restart: always
+    # 127.0.0.1 de propósito: o painel mostra conversa de cliente e só deve
+    # abrir nesta máquina. Trocar para "3000:3000" o expõe na rede local.
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      - EVOLUTION_URL=http://evolution-api:8080
+      - INSTANCE=agente-suporte
+      - API_KEY=${AUTH_KEY}
+      - PROSPECCAO_PERMITIR_BAILEYS=${PROSPECCAO_PERMITIR_BAILEYS:-false}
+      - PROSPECCAO_MODELO_TEXTO=${PROSPECCAO_MODELO_TEXTO:-}
+      - LLM_PROVIDER=${LLM_PROVIDER:-groq}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - GROQ_MODEL=${GROQ_MODEL:-openai/gpt-oss-120b}
+      - OLLAMA_URL=http://host.docker.internal:11434
+      - OLLAMA_MODEL=qwen2.5:3b
+      - MONGO_URL=mongodb://mongo:27017
+      - ADMIN_NUMBER=${ADMIN_NUMBER}
+      - CONTATO_PESSOAL=${CONTATO_PESSOAL}
+      - PAINEL_SENHA=${PAINEL_SENHA}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - evolution-api
+      - mongo
+
+  mongo:
+    image: mongo:7
+    restart: always
+    volumes:
+      - mongo_data:/data/db
+
+  postgres:
+    image: postgres:16
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=evolution
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:latest
+    restart: always
+    volumes:
+      - redis_data:/data
+
+  # Borda pública do painel. O túnel aponta para cá, nunca direto para o
+  # agente: /webhook é aberto e só pode ser alcançado pela rede interna, por
+  # isso a allowlist de rotas em ./caddy/Caddyfile. Sem "ports" de propósito —
+  # este serviço não precisa existir para o host nem para a rede local.
+  proxy:
+    build: ./caddy
+    restart: always
+    volumes:
+      - caddy_data:/data
+    depends_on:
+      - agente
+
+  # Publica o painel no domínio sem abrir porta no roteador e sem IP fixo: o
+  # cloudflared abre a conexão de dentro para fora. Com o TUNNEL_TOKEN vazio
+  # ele sobe e morre em laço — preencha o .env antes de subir o stack.
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: always
+    command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}
+    depends_on:
+      - proxy
+
+volumes:
+  evolution_instances:
+  postgres_data:
+  redis_data:
+  mongo_data:
+  caddy_data:
