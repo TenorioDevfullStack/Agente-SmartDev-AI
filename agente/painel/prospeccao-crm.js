@@ -94,6 +94,7 @@ window.criarCRMProspeccao = function(api, abrirCampanha, criarCampanha) {
     sendSummary.replaceChildren(make('span','ENVIO DA CAMPANHA'),make('h3',ativa?'Campanha em andamento':prontos?`${prontos} ${prontos===1?'prospecto está pronto':'prospectos estão prontos'} para envio`:'Nenhum prospecto pronto para envio'));
     const janela=r.campanha.janela||{dias:[1,2,3,4,5],inicio:'09:00',fim:'18:00'};
     sendSummary.append(make('p',ativa?'A fila está ativa e enviará os contatos no horário configurado.':prontos?'Ao iniciar, todos os prospectos prontos desta campanha entram na fila. O intervalo e o limite diário continuam valendo.':'Autorize pelo menos um prospecto antes de iniciar.'),make('p',`Janela: ${janela.inicio||'09:00'}–${janela.fim||'18:00'} · fuso de São Paulo.`));
+    sendSummary.append(make('p',r.campanha.modo==='automatico'?'Modo automático: o agente continuará as respostas comerciais.':'Modo assistido: o envio inicial é automático, mas toda resposta será pausada para atendimento humano.','crm-mode '+(r.campanha.modo==='automatico'?'automatico':'assistido')));
     if(fichaNumero)show(fichaNumero);if(view!=='detalhe')detalhe.hidden=true;
   }
   area('base');

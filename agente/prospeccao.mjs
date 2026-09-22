@@ -104,9 +104,14 @@ export function criarProspeccao(db, { transporte, registrarSaida, vendas, agora 
     const p = await contatos.findOne({ _id: numero });
     if (!p) return { prospecto: false };
     const c = await campanhas.findOne({ _id: p.campanhaId });
-    if (!p.autorizado || !p.enviadoEm || p.envioVendaPendente || ['nao_contatar', 'revisao', 'contratado'].includes(p.estado) || c?.modo !== 'automatico' || !['ativa', 'concluida', 'pausada'].includes(c.estado) || (p.turnosVenda || 0) >= 20) {
-      return { prospecto: true, ok: false, erro: 'Retomada indisponível: confira campanha, autorização, limite e envios pendentes.' };
-    }
+    if (c?.modo !== 'automatico') return { prospecto: true, ok: false, erro: 'Esta campanha está no modo assistido: toda resposta é encaminhada para uma pessoa. Configure uma campanha em modo automático antes do primeiro envio.' };
+    if (!p.autorizado) return { prospecto: true, ok: false, erro: 'Este prospecto não possui autorização ativa para atendimento automático.' };
+    if (!p.enviadoEm) return { prospecto: true, ok: false, erro: 'A apresentação inicial ainda não foi enviada.' };
+    if (p.envioVendaPendente || p.estado === 'revisao') return { prospecto: true, ok: false, erro: 'Existe um envio que precisa ser revisado antes da retomada.' };
+    if (p.estado === 'nao_contatar') return { prospecto: true, ok: false, erro: 'O contato pediu para não receber mensagens e não pode ser retomado.' };
+    if (p.estado === 'contratado') return { prospecto: true, ok: false, erro: 'A contratação já foi confirmada; continue o relacionamento manualmente.' };
+    if (!['ativa', 'concluida', 'pausada'].includes(c?.estado)) return { prospecto: true, ok: false, erro: 'A campanha ainda não está pronta para continuar conversas.' };
+    if ((p.turnosVenda || 0) >= 20) return { prospecto: true, ok: false, erro: 'O limite de 20 respostas automáticas foi atingido. Continue com atendimento humano.' };
     await contatos.updateOne({ _id: p._id }, { $set: { estado: 'conversando', etapaVenda: p.etapaVenda === 'humano' ? 'retomado' : p.etapaVenda, retomadaIndividualEm: agora(), observacao: 'Retomado pelo administrador. Aguardando nova mensagem do contato.' } });
     await db.collection('conversas').updateOne({ _id: p._id }, { $set: { pausado: false, pausaOrigem: null, responsavel: null }, $inc: { versaoHumana: 1 } }, { upsert: true });
     await auditar(usuario, 'retomar_conversa', p._id);

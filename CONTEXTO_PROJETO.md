@@ -58,6 +58,8 @@ Inspeção de código e documentação; não representa verificação da operaç
 
 ## Próximos trabalhos
 
+- Diagnóstico confirmado em produção em 22/09/2026 para a pausa após “Sim.”: o prospecto estava em estado respondido e a campanha Qualityair estava concluída com modo assistido. Nesse modo, o envio inicial é automático e toda resposta é encaminhada ao humano por definição; a correção da confirmação positiva não era alcançada. Painel alterado para destacar antes do início se as respostas serão automáticas ou humanas, e a tentativa de devolver passa a explicar especificamente o modo assistido.
+
 - Em 22/09/2026, teste real revelou pausa indevida após a primeira resposta curta “sim” à campanha. A causa exata do evento de produção não foi preservada nos logs apresentados, mas o fluxo tinha uma fragilidade confirmada: dependia da classificação do LLM e qualquer ação inadequada, JSON inválido ou falha pausava por segurança. Implementada continuação determinística para confirmações iniciais positivas (“sim”, “pode apresentar”, “quero saber mais” e equivalentes), mantendo a conversa automática; falhas futuras agora registram a causa no log. Onze testes unitários aprovados; integração com MongoDB preparada e ainda não executada localmente porque o Docker Desktop estava desligado.
 
 - Em 22/09/2026, implementada exclusão administrativa do prospecto pela ficha para reiniciar testes. A ação exige confirmação, remove cadastro, conversa, mensagens, lead, recados, agendamentos e tarefas daquele número, preserva auditoria e bloqueia contratação confirmada ou mensagem em processamento. Sintaxe validada; integração automatizada preparada, mas a execução local aguarda MongoDB porque o Docker Desktop estava desligado.
