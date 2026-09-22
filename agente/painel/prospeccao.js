@@ -114,7 +114,7 @@ window.criarPainelProspeccao = function(api) {
       el('pros-oferta-aviso').textContent = r.contatos.some(p => p.tentativaEm) ? 'Oferta bloqueada após o primeiro envio. Você ainda pode pausar a campanha ou assumir conversas.' : 'Oferta salva. Revise o modelo e as autorizações antes de iniciar.';
     }
     el('pros-oferta-campos').disabled = r.campanha.estado === 'ativa' || r.contatos.some(p => p.tentativaEm);
-    el('pros-promocao').textContent = r.promocao ? `Lançamento: ${r.promocao.confirmados} de 10 contratações confirmadas. ${r.promocao.restantes} disponíveis no momento. Pedidos e links enviados não reservam vagas.` : '';
+    el('pros-promocao').textContent = r.promocao ? `Lançamento: ${r.promocao.confirmados} de 10 contratações confirmadas. ${r.promocao.restantes} disponíveis. Implantação de R$ 990 e mensalidade de R$ 297 nos três primeiros meses; depois R$ 497. Pedidos e links não reservam vagas.` : '';
     const totais = {}; r.contatos.forEach(p => totais[p.estado] = (totais[p.estado] || 0) + 1);
     el('pros-resumo').textContent = `${estados[r.campanha.estado] || r.campanha.estado}. ${Object.entries(totais).map(([k,v]) => `${v} ${estados[k] || k}`).join(' · ')}. ${r.campanha.observacao || ''}`;
     el('pros-contatos').replaceChildren();
@@ -149,7 +149,7 @@ window.criarPainelProspeccao = function(api) {
         l1.append(codigo); l2.append(referencia);
         const check = node('input'); check.type = 'checkbox'; check.required = true;
         check.checked = rascunho.conferido || false; check.addEventListener('change', () => { rascunho.conferido = check.checked; });
-        const l3 = node('label', 'Conferi o contrato aceito e o pagamento da implantação de R$ 990. Não inserir dados bancários. '); l3.prepend(check);
+        const l3 = node('label', 'Conferi o contrato aceito, a implantação de R$ 990 e a mensalidade de R$ 297 nos três primeiros meses, voltando a R$ 497 no quarto mês. Não inserir dados bancários. '); l3.prepend(check);
         const b = node('button', 'Confirmar contratação promocional', 'btn'); b.type = 'submit'; form.append(l1, l2, l3, b);
         form.addEventListener('submit', ev => { ev.preventDefault(); acao(async () => {
           await request(`/contatos/${p._id}/confirmar-contratacao`, { clienteId: codigo.value, referencia: referencia.value, contratoAceito: check.checked, pagamentoConferido: check.checked }); rascunhosContato.delete(p._id); await detalhe();

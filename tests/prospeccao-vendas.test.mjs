@@ -15,11 +15,18 @@ test('Oferta de lançamento validada sem inventar link ou pagamento', () => {
 
 test('O modelo não controla preços nem URLs, mesmo quando tenta injetar texto', () => {
   const r = decidirVenda(JSON.stringify({ acao: 'proposta', mensagem: 'Grátis em https://fraude.example', preco: 0 }), OFERTA_LANCAMENTO, {}, { restantes: 10 });
-  assert.match(r.mensagem, /1\.490,00/); assert.match(r.mensagem, /990,00/); assert.match(r.mensagem, /497,00/);
+  assert.match(r.mensagem, /1\.490,00/); assert.match(r.mensagem, /990,00/); assert.match(r.mensagem, /297,00/); assert.match(r.mensagem, /quarto mês.*497,00/s);
   assert.doesNotMatch(r.mensagem, /fraude|Grátis/);
   assert.throws(() => decidirVenda('{"acao":"transferirDinheiro"}', OFERTA_LANCAMENTO, {}));
   assert.throws(() => decidirVenda('texto livre', OFERTA_LANCAMENTO, {}));
   assert.throws(() => decidirVenda('{"acao":"faq","indice":90}', OFERTA_LANCAMENTO, {}));
+});
+
+test('Interesse comercial concreto é encaminhado para atendimento personalizado', () => {
+  const r = decidirVenda('{"acao":"interesse"}', OFERTA_LANCAMENTO, {});
+  assert.equal(r.acao, 'interesse');
+  assert.match(r.mensagem, /Leandro|personalizado/);
+  assert.doesNotMatch(r.mensagem, /horário confirmado|pagamento confirmado/);
 });
 
 test('Apresentação é curta, contextual e não repete o bloco técnico', () => {
@@ -47,6 +54,14 @@ test('Apresentação é curta, contextual e não repete o bloco técnico', () =>
 
 test('Fim da promoção remove desconto de novas propostas', () => {
   assert.doesNotMatch(decidirVenda('{"acao":"proposta"}', OFERTA_LANCAMENTO, {}, { restantes: 0 }).mensagem, /990,00|redução/);
+});
+
+test('Campanha salva com FAQ antiga recebe a condição promocional atual', () => {
+  const antiga = { ...OFERTA_LANCAMENTO, faq: OFERTA_LANCAMENTO.faq.map((item, i) => i === 6 ? { ...item, resposta: 'A mensalidade é mantida e não há desconto.' } : item) };
+  const ativa = decidirVenda('{"acao":"faq","indice":6}', antiga, {}, { restantes: 4 });
+  assert.match(ativa.mensagem, /R\$ 297.*três primeiros meses.*R\$ 497/s);
+  const encerrada = decidirVenda('{"acao":"faq","indice":6}', antiga, {}, { restantes: 0 });
+  assert.match(encerrada.mensagem, /mensalidade é mantida/);
 });
 
 test('Contratação exige proposta e vira pedido sem cobrança automática', () => {

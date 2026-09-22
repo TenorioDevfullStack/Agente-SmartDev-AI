@@ -64,6 +64,10 @@ try {
   const confirmacao = { clienteId: 'clinica-teste', referencia: 'teste-contrato-01', contratoAceito: true, pagamentoConferido: true };
   assert.equal((await req(`/prospeccao/contatos/${numero}/confirmar-contratacao`, confirmacao)).status, 200);
   assert.equal((await req(`/prospeccao/contatos/${numero}/confirmar-contratacao`, confirmacao)).data.promocao.confirmados, 1);
+  const promocaoRegistrada = await f.db.collection('prospeccao_promocoes').findOne({ _id: 'lancamento-2026-primeiros-10' });
+  assert.equal(promocaoRegistrada.confirmados[0].mensalidadePromocionalCentavos, 29700);
+  assert.equal(promocaoRegistrada.confirmados[0].mensalidadePromocionalMeses, 3);
+  assert.equal(promocaoRegistrada.confirmados[0].mensalidadeAposPromocaoCentavos, 49700);
   await mensagem('Olá'); assert.equal(f.respostas.length, antes);
 
   async function contato(sufixo) {
@@ -91,6 +95,14 @@ try {
   const expirou = await contato('1005');
   await f.servico.receber(expirou, 'Olá'); await f.servico.responder(expirou, new Date(f.agora().getTime() - 86400000));
   assert.equal((await f.db.collection('prospeccao_contatos').findOne({ _id: expirou })).estado, 'humano');
+
+  const interessado = await contato('1008');
+  const antesInteresse = f.respostas.length;
+  await mensagem('Quero marcar uma demonstração e conversar sobre a implantação', { acao: 'interesse' }, interessado);
+  assert.equal(f.respostas.length, antesInteresse + 1);
+  assert.match(f.respostas.at(-1).texto, /Leandro|personalizado/);
+  assert.equal((await f.db.collection('prospeccao_contatos').findOne({ _id: interessado })).estado, 'humano');
+  assert.equal((await f.db.collection('conversas').findOne({ _id: interessado })).pausado, true);
 
   const pausar = await contato('1006');
   f.antesInferir(async () => { await req('/prospeccao/campanhas/vendas/pausar', {}); });
