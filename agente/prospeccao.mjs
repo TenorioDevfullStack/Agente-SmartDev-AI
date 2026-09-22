@@ -216,6 +216,35 @@ export function criarProspeccao(db, { transporte, registrarSaida, vendas, agora 
       await auditar(req.usuario, 'confirmar_contratacao', p._id, { clienteId: fechamento.clienteId });
       res.json({ ok: true, promocao: await promocao.status() });
     })));
+    router.delete('/contatos/:numero', rota(async (req, res) => exclusivo(async () => {
+      const numero = telefoneBR(req.params.numero);
+      const p = numero && await contatos.findOne({ _id: numero });
+      if (!p) return res.status(404).json({ erro: 'Prospecto não encontrado.' });
+      if (p.estado === 'contratado' || p.fechamento) return res.status(409).json({ erro: 'Uma contratação confirmada não pode ser apagada. Preserve o registro comercial.' });
+      if (await db.collection('fila_mensagens').findOne({ numero, estado: 'processando' })) return res.status(409).json({ erro: 'Aguarde o processamento da mensagem atual antes de excluir este prospecto.' });
+
+      await contatos.deleteOne({ _id: numero });
+      await Promise.all([
+        db.collection('conversas').deleteOne({ _id: numero }),
+        db.collection('mensagens').deleteMany({ numero }),
+        db.collection('leads').deleteOne({ _id: numero }),
+        db.collection('agendamentos').deleteMany({ numero }),
+        db.collection('recados').deleteMany({ numero }),
+        db.collection('contatos').deleteOne({ _id: numero }),
+        db.collection('fila_mensagens').deleteMany({ numero }),
+        db.collection('envios_agente').deleteMany({ _id: { $regex: '^' + numero + ':' } }),
+        db.collection('eventos_humanos').deleteMany({ _id: { $regex: '^' + numero + ':' } }),
+      ]);
+      const restantes = await contatos.countDocuments({ campanhaId: p.campanhaId });
+      await campanhas.updateOne({ _id: p.campanhaId }, [
+        { $set: {
+          importados: { $max: [0, { $subtract: [{ $ifNull: ['$importados', 1] }, 1] }] },
+          ...(restantes === 0 ? { estado: 'pausada', observacao: 'Campanha sem prospectos após exclusão.' } : {}),
+        } },
+      ]);
+      await auditar(req.usuario, 'excluir_prospecto', numero, { campanhaId: p.campanhaId, historicoRemovido: true });
+      res.json({ ok: true, campanhaId: p.campanhaId });
+    })));
     router.patch('/contatos/:numero', rota(async (req, res) => exclusivo(async () => {
       const p = await contatos.findOne({ _id: req.params.numero });
       if (!p) return res.status(404).json({ erro: 'Contato não encontrado.' });

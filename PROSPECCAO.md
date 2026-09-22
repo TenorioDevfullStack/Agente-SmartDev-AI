@@ -89,3 +89,5 @@ A aba Prospecção abre a base de prospectos com busca por empresa/telefone, fil
 Campanhas organiza três áreas: Prospectos da campanha, Oferta e horários, Revisar e iniciar. Importação continua numa área própria. Autorização, limites, bloqueio de duplicidade e controle de envio permanecem no servidor.
 
 Na ficha de um prospecto com estado **Pronto para contato**, use **Revisar e iniciar campanha**. A etapa final informa quantos prospectos prontos da mesma campanha entrarão na fila e exibe o horário configurado. O início é por campanha: todos os contatos prontos entram na fila, respeitando intervalo mínimo, limite diário e janela de envio. Prospectos sem autorização não entram nessa contagem.
+
+Na ficha, **Excluir prospecto e recomeçar** remove o cadastro e o histórico operacional daquele número para permitir um teste novo. A ação exige confirmação, preserva a auditoria e recusa exclusão de contratação confirmada ou mensagem em processamento.

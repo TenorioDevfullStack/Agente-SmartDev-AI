@@ -1,4 +1,4 @@
-﻿/* Prospecção: navegação, base e ficha de contato. Sem dependências externas. */
+/* Prospecção: navegação, base e ficha de contato. Sem dependências externas. */
 window.criarCRMProspeccao = function(api, abrirCampanha, criarCampanha) {
   const $ = id => document.getElementById(id), root = document.querySelector('[data-vista="prospeccao"] .paineis-col');
   const make = (tag, text, cls) => { const n = document.createElement(tag); if(text != null) n.textContent=text; if(cls)n.className=cls; return n; };
@@ -61,7 +61,17 @@ window.criarCRMProspeccao = function(api, abrirCampanha, criarCampanha) {
       next.append(make('strong',labels[p.estado]||p.estado),make('p','Confira as ações disponíveis abaixo.'));
     }
     body.append(next);
-    const timeline=make('div',null,'crm-timeline');timeline.append(make('h3','Histórico da campanha'),make('strong',snapshot.campanha.nome));for(const[t,v]of [['Cadastrado',p.criadoEm],['Autorizado',p.aprovadoEm],['Tentativa de envio',p.tentativaEm],['Aceito pelo provedor',p.enviadoEm],['Última resposta',p.respostaEm],['Pedido de contratação',p.pedidoEm]])if(v)timeline.append(make('p',t+' · '+date(v)));if(!p.tentativaEm)timeline.append(make('p','Nenhum envio realizado.'));if(p.enviadoEm&&snapshot.campanha.modeloTexto)timeline.append(make('blockquote',snapshot.campanha.modeloTexto.replace('{{1}}',p.empresa)));timeline.append(make('small','Aceite do provedor não confirma leitura. Esta versão vincula cada prospecto a uma campanha.'));body.append(timeline);if(rows.has(numero))body.append(rows.get(numero));if(!dialog.open)dialog.showModal();
+    const timeline=make('div',null,'crm-timeline');timeline.append(make('h3','Histórico da campanha'),make('strong',snapshot.campanha.nome));for(const[t,v]of [['Cadastrado',p.criadoEm],['Autorizado',p.aprovadoEm],['Tentativa de envio',p.tentativaEm],['Aceito pelo provedor',p.enviadoEm],['Última resposta',p.respostaEm],['Pedido de contratação',p.pedidoEm]])if(v)timeline.append(make('p',t+' · '+date(v)));if(!p.tentativaEm)timeline.append(make('p','Nenhum envio realizado.'));if(p.enviadoEm&&snapshot.campanha.modeloTexto)timeline.append(make('blockquote',snapshot.campanha.modeloTexto.replace('{{1}}',p.empresa)));timeline.append(make('small','Aceite do provedor não confirma leitura. Esta versão vincula cada prospecto a uma campanha.'));body.append(timeline);if(rows.has(numero))body.append(rows.get(numero));
+    const excluir=make('div',null,'cartao-acoes');
+    excluir.append(btn('Excluir prospecto e recomeçar',async()=>{
+      if(!confirm('Excluir este prospecto e todo o histórico de teste deste número? Conversa, mensagens, lead, recados e agendamentos serão removidos. A auditoria será preservada.'))return;
+      try{
+        await api('/prospeccao/contatos/'+encodeURIComponent(p._id),{method:'DELETE'});
+        dialog.close();await abrirCampanha(p.campanhaId,false);await refresh();
+      }catch(e){erro(e);}
+    },'btn perigo'));
+    body.append(excluir);
+    if(!dialog.open)dialog.showModal();
   }
 
   async function novoProspecto(){

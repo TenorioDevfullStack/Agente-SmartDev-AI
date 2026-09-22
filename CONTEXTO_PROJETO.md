@@ -58,6 +58,8 @@ Inspeção de código e documentação; não representa verificação da operaç
 
 ## Próximos trabalhos
 
+- Em 22/09/2026, implementada exclusão administrativa do prospecto pela ficha para reiniciar testes. A ação exige confirmação, remove cadastro, conversa, mensagens, lead, recados, agendamentos e tarefas daquele número, preserva auditoria e bloqueia contratação confirmada ou mensagem em processamento. Sintaxe validada; integração automatizada preparada, mas a execução local aguarda MongoDB porque o Docker Desktop estava desligado.
+
 - Evidência de produção em 22/09/2026: após atualização da VPS até o commit 20e6b72, scripts/verificar-prontidao-vps.sh aprovou os sete serviços, painel HTTP local, WhatsApp autenticado, timers de monitoramento e backup ativos, backup externo verificado há 16 horas e disco em 8%. Infraestrutura liberada para teste comercial assistido; o fluxo real completo ainda precisa ser exercitado antes de concluir o primeiro marco.
 
 - Em 22/09/2026, o usuário definiu como objetivo levar o projeto à prontidão comercial para começar a vender agentes. A execução será feita por marcos com evidência: estabilizar e validar o agente comercial em produção; preparar o primeiro cliente pagante com isolamento e aceite; depois automatizar configuração e provisionamento por cliente. Recursos adicionais como agenda integrada, CRM, pagamento e RAG não bloqueiam o Atendimento Essencial quando não fazem parte do escopo vendido.
