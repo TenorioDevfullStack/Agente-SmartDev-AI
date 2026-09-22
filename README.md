@@ -112,6 +112,10 @@ Enviar uma mensagem pelo painel sem assumir a conversa mantém o agente ativo. M
 
 ## Manutenção
 
+### Prontidão comercial
+
+Antes de iniciar vendas ou ativar um novo cliente, use a matriz em [PRONTIDAO_COMERCIAL.md](PRONTIDAO_COMERCIAL.md). Na VPS, o script scripts/verificar-prontidao-vps.sh confere containers, painel local, autenticação do WhatsApp, timers, backup recente e espaço em disco sem exibir credenciais.
+
 ### Backup automático
 
 A rotina em [BACKUPS.md](BACKUPS.md) prepara backups diários às 03:00, conserva 14 cópias verificadas e testa a restauração do MongoDB, PostgreSQL e arquivos da sessão em containers isolados. O instalador só registra a tarefa diária após o primeiro backup e teste passarem. Execute `scripts/Install-BackupSchedule.ps1` conforme a documentação; criar os scripts não ativa o agendamento.
