@@ -17,7 +17,8 @@ Atualização local em 21/09/2026: importar CSV/Excel, revisar contatos, configu
 
 ## Conversa comercial e fechamento
 
-- A IA escolhe ações e respostas da base; não escreve livremente valores, contratos ou links. Preços e proposta são montados pelo código com a oferta salva. Não tem acesso às ferramentas gerais de agendamento/recados nem a pagamentos.
+- A IA escolhe a etapa e escreve apresentações e perguntas de qualificação curtas, levando em conta a última fala e o histórico. A resposta é limitada a 350 caracteres, uma pergunta e fatos da oferta; apresentações repetidas, preços e links gerados pelo modelo são descartados. FAQ, preços, promoção, contrato e links continuam vindo do conteúdo aprovado e das regras do sistema.
+- O agente não despeja o escopo completo na apresentação. Limites e exclusões são usados quando forem relevantes à pergunta; a proposta financeira também é resumida. O modelo não tem acesso às ferramentas gerais de agendamento/recados nem a pagamentos.
 - O agente pode apresentar, qualificar, responder às dúvidas e objeções cadastradas e propor contratação. Não concede descontos adicionais. Sem resposta aplicável, encaminha para a equipe.
 - Há limite de 20 respostas automáticas por contato, considerando toda a campanha. Repetidas perguntas de qualificação são evitadas pelo histórico e pelo registro das perguntas feitas. Ao atingir o limite, a próxima entrada vai para humano.
 - As respostas podem ocorrer fora do horário comercial, dentro de 24 horas da entrada. Usa-se a data mais antiga entre o timestamp válido informado pelo provedor e o recebimento no servidor; na ausência do timestamp, usa-se o recebimento. Mensagens atrasadas na fila não ganham uma nova janela ao serem processadas. O transporte oficial é conferido antes da inferência e a situação da conversa é revalidada antes do envio.

@@ -38,8 +38,21 @@ try {
     await fila.executar('entrada');
     return id;
   }
-  const duplicado = await mensagem('Pode apresentar', { acao: 'apresentar' }); assert.equal(f.respostas.length, 1);
+  const duplicado = await mensagem('Pode apresentar', {
+    acao: 'apresentar',
+    mensagem: 'Claro! O assistente responde às dúvidas recorrentes e envolve sua equipe quando é preciso. Qual parte do atendimento mais ocupa seu time hoje?',
+  });
+  assert.equal(f.respostas.length, 1);
+  assert.match(f.respostas.at(-1).texto, /mais ocupa seu time/i);
+  assert.doesNotMatch(f.respostas.at(-1).texto, /50 perguntas|Não inclui|transcrição de áudio/i);
   await mensagem('Pode apresentar', null, numero, duplicado); assert.equal(f.respostas.length, 1);
+  await mensagem('Gostaria de saber mais', {
+    acao: 'apresentar',
+    mensagem: 'Sou o assistente virtual da SmartDev AI. Atendimento Essencial.',
+  });
+  assert.equal(f.respostas.length, 2);
+  assert.doesNotMatch(f.respostas.at(-1).texto, /Sou o assistente|Atendimento Essencial|50 perguntas|Não inclui/i);
+  assert.match(f.respostas.at(-1).texto, /atendimento, implantação ou valores/i);
   await mensagem('Vocês agendam direto?', { acao: 'faq', indice: 2 }); assert.match(f.respostas.at(-1).texto, /orçamento próprios/);
   await mensagem('Quanto custa?', { acao: 'proposta' }); assert.match(f.respostas.at(-1).texto, /990,00/);
   await mensagem('Quero contratar', { acao: 'contratar' });

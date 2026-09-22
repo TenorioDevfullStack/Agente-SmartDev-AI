@@ -1,6 +1,6 @@
 # Contexto persistente — SmartDev AI
 
-Atualizado em 21/09/2026.
+Atualizado em 22/09/2026.
 
 ## Objetivo e decisões do usuário
 
@@ -126,3 +126,6 @@ Inspeção de código e documentação; não representa verificação da operaç
 - Validação: regressão prospeccao.integration.mjs e nova prospeccao-crm.integration.mjs passaram com MongoDB isolado e transporte simulado. Navegador verificou criação de campanha, cadastro, tabela, ficha e autorização em desktop/celular; sem erro de JavaScript observado. Sem envio WhatsApp real nesta entrega.
 - Publicação desta revisão no GitHub e na VPS ainda pendente. Evidência anterior do usuário confirma instalação da versão anterior via GitHub na VPS; não extrapolar para esta revisão.
 - Em 22/09/2026, corrigido localmente o próximo passo do prospecto pronto: a ficha agora oferece “Revisar e iniciar campanha” e abre diretamente a etapa final; essa etapa mostra quantos prospectos prontos entrarão na fila, a janela de envio e um botão nomeado com a quantidade. Contatos sem autorização continuam sem liberação de envio. Validação em navegador isolado confirmou o caminho cadastro → autorização → ficha → revisão, com o botão habilitado para um prospecto pronto e sem erros no console. Regressões `prospeccao-crm.integration.mjs` e `prospeccao.integration.mjs` aprovadas; nenhum WhatsApp real foi acionado. Commit/publicação dessa correção ainda pendentes.
+- Publicação da correção da ficha concluída no GitHub no commit `4c3c8eb`; implantação dessa revisão na VPS ainda depende de atualização e reconstrução do contêiner.
+- Em 22/09/2026, o usuário rejeitou a apresentação comercial longa, técnica e repetitiva observada em teste real. Implementado localmente: a IA passa a redigir apresentações e qualificações contextuais com até 350 caracteres e uma pergunta; o sistema rejeita introdução repetida, preço ou URL produzidos pelo modelo e usa uma resposta curta segura. O escopo completo deixou de ser despejado na apresentação e a proposta financeira foi resumida. FAQ, preços, promoção, link e contratação continuam controlados por conteúdo/regras aprovados.
+- Validação da conversa natural: 8 testes unitários aprovados, incluindo repetição, limite e tentativa de inserir preço/link; integração comercial completa aprovada com MongoDB isolado, IA e WhatsApp simulados; 4 testes de áudio sem transcrição aprovados. Isso não comprova ainda a qualidade do modelo Groq nem envio real após a mudança. Publicação no GitHub e implantação na VPS desta correção ainda pendentes.
