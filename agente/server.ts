@@ -339,6 +339,20 @@ async function initDb() {
           await db.collection("conversas").updateOne({ _id: numero }, { $push: { mensagens: { $each: [{ role: "assistant", content: texto }], $slice: -HISTORICO_MAX } } });
           await logMensagemReal(numero, "assistant", texto, "agente");
         },
+        notificarHumano: async ({ numero, empresa, motivo }: { numero: string; empresa?: string; motivo: string }) => {
+          if (!ADMIN_NUMBER || ADMIN_NUMBER === numero) {
+            console.warn("[ADMIN] Aviso de atendimento humano não enviado: configure ADMIN_NUMBER com um WhatsApp diferente do prospecto");
+            return false;
+          }
+          const contato = formatarContato(numero);
+          return avisarAdmin(
+            "🔔 *Atendimento comercial aguardando você*\n\n" +
+            "*" + (empresa || "Prospecto") + "*\n" +
+            "📱 " + contato.exibicao + "\n" +
+            "Motivo: " + motivo + "\n\n" +
+            "Abrir conversa: " + contato.link,
+          );
+        },
       });
       prospeccao = criarProspeccao(db, {
         transporte: transporteProspeccao, vendas, promocao,

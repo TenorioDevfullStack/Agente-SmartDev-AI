@@ -112,7 +112,7 @@ export function criarProspeccao(db, { transporte, registrarSaida, vendas, agora 
     if (p.estado === 'contratado') return { prospecto: true, ok: false, erro: 'A contratação já foi confirmada; continue o relacionamento manualmente.' };
     if (!['ativa', 'concluida', 'pausada'].includes(c?.estado)) return { prospecto: true, ok: false, erro: 'A campanha ainda não está pronta para continuar conversas.' };
     if ((p.turnosVenda || 0) >= 20) return { prospecto: true, ok: false, erro: 'O limite de 20 respostas automáticas foi atingido. Continue com atendimento humano.' };
-    await contatos.updateOne({ _id: p._id }, { $set: { estado: 'conversando', etapaVenda: p.etapaVenda === 'humano' ? 'retomado' : p.etapaVenda, retomadaIndividualEm: agora(), observacao: 'Retomado pelo administrador. Aguardando nova mensagem do contato.' } });
+    await contatos.updateOne({ _id: p._id }, { $set: { estado: 'conversando', etapaVenda: p.etapaVenda === 'humano' ? 'retomado' : p.etapaVenda, retomadaIndividualEm: agora(), observacao: 'Retomado pelo administrador. Aguardando nova mensagem do contato.' }, $unset: { notificacaoHumanaEm: '', notificacaoHumanaEstado: '' } });
     await db.collection('conversas').updateOne({ _id: p._id }, { $set: { pausado: false, pausaOrigem: null, responsavel: null }, $inc: { versaoHumana: 1 } }, { upsert: true });
     await auditar(usuario, 'retomar_conversa', p._id);
     return { prospecto: true, ok: true };

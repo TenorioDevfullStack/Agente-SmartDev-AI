@@ -118,6 +118,10 @@ try {
   assert.match(f.respostas.at(-1).texto, /Leandro|personalizado/);
   assert.equal((await f.db.collection('prospeccao_contatos').findOne({ _id: interessado })).estado, 'humano');
   assert.equal((await f.db.collection('conversas').findOne({ _id: interessado })).pausado, true);
+  assert.equal(f.notificacoes.filter(n => n.numero === interessado).length, 1);
+  assert.match(f.notificacoes.find(n => n.numero === interessado).motivo, /interesse concreto/i);
+  await mensagem('Ok, muito bom.', null, interessado);
+  assert.equal(f.notificacoes.filter(n => n.numero === interessado).length, 1);
 
   const pausar = await contato('1006');
   f.antesInferir(async () => { await req('/prospeccao/campanhas/vendas/pausar', {}); });

@@ -21,12 +21,13 @@ export async function fixture(port = 0) {
     await db.collection('mensagens').insertOne({ numero, role: 'assistant', content: texto, em: data });
     await db.collection('conversas').updateOne({ _id: numero }, { $push: { mensagens: { role: 'assistant', content: texto } } }, { upsert: true });
   };
-  const respostas = [], decisoes = [];
+  const respostas = [], decisoes = [], notificacoes = [];
   let antesInferir = async () => {}, falhaResposta = false;
   const promocao = criarPromocao(db, () => data);
   const vendas = criarVendasProspeccao(db, { promocao, agora: () => data, registrarSaida, validarTransporte: async () => {},
     inferir: async () => { await antesInferir(); return { content: decisoes.shift() || '{"acao":"apresentar"}' }; },
     enviar: async (numero, texto) => { respostas.push({ numero, texto }); if (falhaResposta) throw new Error('Timeout de resposta simulado'); },
+    notificarHumano: async dados => { notificacoes.push(dados); return true; },
   });
   const servico = criarProspeccao(db, { transporte, registrarSaida, vendas, promocao, agora: () => data }); await servico.preparar();
   const auth = await criarAutenticacao(db, express.Router, 'senha-teste-inicial');
@@ -39,7 +40,7 @@ export async function fixture(port = 0) {
   app.get('/api/conversas', (_req,res) => res.json([]));
   const server = app.listen(port, '127.0.0.1'); await new Promise(r => server.once('listening', r));
   const url = `http://127.0.0.1:${server.address().port}`;
-  return { db, servico, enviados, url, transporte, registrarSaida, vendas, promocao, respostas, agora: () => data,
+  return { db, servico, enviados, url, transporte, registrarSaida, vendas, promocao, respostas, notificacoes, agora: () => data,
     decidir(d) { decisoes.push(typeof d === 'string' ? d : JSON.stringify(d)); },
     antesInferir(fn) { antesInferir = fn; }, falharResposta() { falhaResposta = true; },
     avancar(ms = 61000) { data = new Date(data.getTime() + ms); }, falhar() { falha = true; },

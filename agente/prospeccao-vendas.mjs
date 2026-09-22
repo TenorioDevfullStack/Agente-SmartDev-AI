@@ -131,12 +131,34 @@ export function decidirVenda(raw, oferta, contato, promocao) {
 
 // O modelo apenas escolhe ações e conteúdo aprovado. Não tem ferramentas,
 // acesso a pagamentos nem liberdade para criar preços, contratos ou URLs.
-export function criarVendasProspeccao(db, { inferir, enviar, registrarSaida, validarTransporte, promocao, agora = () => new Date() }) {
+export function criarVendasProspeccao(db, { inferir, enviar, registrarSaida, validarTransporte, notificarHumano = async () => false, promocao, agora = () => new Date() }) {
   const contatos = db.collection('prospeccao_contatos'), campanhas = db.collection('prospeccao_campanhas'), conversas = db.collection('conversas');
   const permiteDialogo = (campanha, contato) => ['ativa', 'concluida'].includes(campanha?.estado) || (campanha?.estado === 'pausada' && Boolean(contato?.retomadaIndividualEm));
   async function encaminhar(numero, observacao, estado = 'humano') {
-    await contatos.updateOne({ _id: numero, estado: { $ne: 'nao_contatar' } }, { $set: { estado, etapaVenda: 'humano', observacao } });
+    const contato = await contatos.findOneAndUpdate(
+      { _id: numero, estado: { $ne: 'nao_contatar' } },
+      { $set: { estado, etapaVenda: 'humano', observacao } },
+      { returnDocument: 'after' },
+    );
     await conversas.updateOne({ _id: numero, pausado: { $ne: true } }, { $set: { pausado: true, pausaOrigem: 'prospeccao' } });
+    if (!contato || contato.notificacaoHumanaEm) return;
+    const reservado = await contatos.updateOne(
+      { _id: numero, notificacaoHumanaEm: { $exists: false } },
+      { $set: { notificacaoHumanaEm: agora(), notificacaoHumanaEstado: 'enviando' } },
+    );
+    if (!reservado.modifiedCount) return;
+    let avisado = false;
+    try {
+      avisado = await notificarHumano({ numero, empresa: contato.empresa, motivo: observacao, estado });
+    } catch (err) {
+      console.error('[PROSPECÇÃO] Falha ao avisar atendimento humano para ' + numero + ':', err?.message || err);
+    }
+    await contatos.updateOne(
+      { _id: numero },
+      avisado
+        ? { $set: { notificacaoHumanaEstado: 'enviada' } }
+        : { $set: { notificacaoHumanaEstado: 'falhou' }, $unset: { notificacaoHumanaEm: '' } },
+    );
   }
   async function responder(numero, recebidoEm) {
     const p = await contatos.findOne({ _id: numero });
