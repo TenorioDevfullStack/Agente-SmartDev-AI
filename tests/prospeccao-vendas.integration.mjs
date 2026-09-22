@@ -96,6 +96,14 @@ try {
   await f.servico.receber(expirou, 'Olá'); await f.servico.responder(expirou, new Date(f.agora().getTime() - 86400000));
   assert.equal((await f.db.collection('prospeccao_contatos').findOne({ _id: expirou })).estado, 'humano');
 
+  const recuperado = await contato('1010');
+  await f.db.collection('prospeccao_contatos').updateOne({ _id: recuperado }, { $set: { turnosVenda: 3, perguntasFeitas: [1, 2, 3] } });
+  const antesRecuperacao = f.respostas.length;
+  await mensagem('Para o próximo mês.', 'resposta truncada sem JSON', recuperado);
+  assert.equal(f.respostas.length, antesRecuperacao + 1);
+  assert.match(f.respostas.at(-1).texto, /responsável.*atendimento|contratação/i);
+  assert.equal((await f.db.collection('prospeccao_contatos').findOne({ _id: recuperado })).estado, 'conversando');
+  assert.equal((await f.db.collection('conversas').findOne({ _id: recuperado })).pausado, false);
   const confirmou = await contato('1009');
   const antesConfirmacao = f.respostas.length;
   await mensagem('sim', { acao: 'humano' }, confirmou);

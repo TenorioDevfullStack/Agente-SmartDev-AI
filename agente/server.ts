@@ -826,7 +826,7 @@ async function chamarGroq(messages: any[], ferramentas: any[] = TOOLS) {
       model: GROQ_MODEL,
       messages,
       ...(ferramentas.length ? { tools: ferramentas, tool_choice: "auto" } : {}),
-      max_tokens: 400,
+      max_tokens: ferramentas.length ? 400 : 800,
       // Baixa de propósito: o modelo estava preferindo conversar a chamar tools.
       temperature: 0.3,
     },

@@ -37,6 +37,13 @@ export const normalizar = t => String(t || '').normalize('NFD').replace(/[\u0300
 export function pedeHumano(t) {
   return /^(humano|humana|atendente)[.!?\s]*$|(?:quero|preciso|prefiro|posso|gostaria de)\s+(?:falar|conversar)\s+com\s+(?:(?:um|uma|o|a)\s+)?(?:humano|humana|atendente|pessoa|alguem|responsavel)|(?:quero|prefiro)\s+(?:(?:um|uma)\s+)?(?:humano|humana|atendente)|pessoa de verdade/.test(normalizar(t));
 }
+export function respostaSeguraParaFallback(t) {
+  const valor = normalizar(t).trim();
+  return valor.length > 0 && valor.length <= 300 &&
+    !pedeHumano(valor) &&
+    !/\b(preco|valor|custa|desconto|contrat|pagamento|paguei|paciente|diagnostico|exame|receita|cpf|cartao|link)\b/.test(valor) &&
+    !/\b(ignore|instrucao|prompt|sistema|json|acao)\b/.test(valor);
+}
 export function respostaInicialPositiva(t) {
   const valor = normalizar(t).trim().replace(/[.!?]+$/g, '').trim();
   return /^(sim|sim,? (?:claro|pode|por favor)|claro|pode|pode sim|quero|quero sim|tenho interesse|gostaria|gostaria sim|quero saber mais|pode apresentar|pode explicar)$/.test(valor);
@@ -74,8 +81,14 @@ Estágio: ${contato.etapaVenda || 'apresentacao'}. Proposta já enviada: ${Boole
 
 export function decidirVenda(raw, oferta, contato, promocao) {
   let d;
-  try { d = JSON.parse(typeof raw === 'string' ? raw : raw?.content); } catch { throw new Error('Resposta comercial inválida'); }
-  if (!d || !['apresentar', 'qualificar', 'faq', 'proposta', 'interesse', 'contratar', 'humano', 'recusar'].includes(d.acao)) throw new Error('Ação comercial inválida');
+  const bruto = texto(typeof raw === 'string' ? raw : raw?.content, 10000);
+  const candidatos = [bruto];
+  const inicio = bruto.indexOf('{'), fim = bruto.lastIndexOf('}');
+  if (inicio >= 0 && fim > inicio) candidatos.push(bruto.slice(inicio, fim + 1));
+  for (const candidato of candidatos) {
+    try { d = JSON.parse(candidato); break; } catch {}
+  }
+  if (!d) throw new Error('Resposta comercial inválida');  if (!d || !['apresentar', 'qualificar', 'faq', 'proposta', 'interesse', 'contratar', 'humano', 'recusar'].includes(d.acao)) throw new Error('Ação comercial inválida');
   const moeda = valor => (valor / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   const desconto = oferta.promocao === PROMOCAO_ID && promocao?.restantes > 0;
   const promocional = desconto ? '\nLançamento: implantação por R$ 990,00 e mensalidade de R$ 297,00 nos três primeiros meses. A partir do quarto mês, a mensalidade volta a R$ 497,00. Válido para as dez primeiras empresas com contrato aceito e pagamento da implantação confirmado, sujeito à disponibilidade no fechamento; esta conversa não reserva vaga.' : '';
@@ -151,7 +164,16 @@ export function criarVendasProspeccao(db, { inferir, enviar, registrarSaida, val
       if ((p.turnosVenda || 0) === 0 && respostaInicialPositiva(p.ultimaResposta)) {
         decisao = await etapa('venda-decisao', async () => decidirVenda('{"acao":"apresentar"}', oferta, p, promocaoAtual));
       } else {
-        decisao = await etapa('venda-decisao', async () => decidirVenda(await inferir(promptComercial(oferta, p, conv?.mensagens || []), numero, verificar), oferta, p, promocaoAtual));
+        try {
+          decisao = await etapa('venda-decisao', async () => decidirVenda(await inferir(promptComercial(oferta, p, conv?.mensagens || []), numero, verificar), oferta, p, promocaoAtual));
+        } catch (err) {
+          await verificar();
+          if (!respostaSeguraParaFallback(p.ultimaResposta)) throw err;
+          const proxima = [0, 1, 2, 3].find(indice => !p.perguntasFeitas?.includes(indice));
+          const fallback = proxima === undefined ? { acao: 'proposta' } : { acao: 'qualificar', indice: proxima };
+          console.warn('[PROSPECÇÃO] Decisão da IA inválida; usando próximo passo seguro para ' + numero + ':', err?.message || err);
+          decisao = decidirVenda(JSON.stringify(fallback), oferta, p, promocaoAtual);
+        }
       }
       await verificar();
     } catch (err) {
