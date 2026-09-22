@@ -27,6 +27,7 @@ window.criarCRMProspeccao = function(api, abrirCampanha, criarCampanha) {
   const prospectos=make('section'),config=make('section'),envio=make('section');
   const cadastro=detalhe.querySelector('details');prospectos.append(cadastro,$('pros-contatos'));config.append($('pros-promocao'),$('pros-oferta-form'));
   const nodes=[...detalhe.children];let started=false;for(const n of nodes){if(n.tagName==='LABEL')started=true;if(started)envio.append(n);}
+  const sendSummary=make('div',null,'crm-send-summary');envio.prepend(sendSummary);
   content.append(prospectos,config,envio);detalhe.append(content);
   function tab(v){[prospectos,config,envio].forEach((n,i)=>n.hidden=i!==v);[...tabs.children].forEach((b,i)=>b.setAttribute('aria-pressed',String(i===v)));}
   ['Prospectos da campanha','Oferta e horários','Revisar e iniciar'].forEach((t,i)=>tabs.append(btn(t,()=>tab(i))));tab(0);
@@ -38,7 +39,23 @@ window.criarCRMProspeccao = function(api, abrirCampanha, criarCampanha) {
   function erro(e){$('pros-erro').textContent=e.message||'Não foi possível carregar.';$('pros-erro').scrollIntoView({block:'nearest'});}
   function table(list, open) {const t=make('table',null,'crm-table'),head=make('thead'),tr=make('tr');['Prospecto','Campanha','Situação','Último contato',''].forEach(x=>tr.append(make('th',x)));head.append(tr);t.append(head);const tb=make('tbody');for(const p of list){const r=make('tr'),identity=make('td');identity.append(make('strong',p.empresa),make('small',p._id));r.append(identity,make('td',p.campanhaNome||snapshot?.campanha.nome||'—'));const status=make('td');status.append(make('span',labels[p.estado]||p.estado,'crm-badge '+p.estado));r.append(status,make('td',date(p.respostaEm||p.enviadoEm||p.tentativaEm)));const action=make('td');action.append(btn('Ver ficha →',()=>open(p)));r.append(action);tb.append(r);}t.append(tb);return t;}
   async function refresh(){const rev=++revision;try{const r=await api('/prospeccao/prospectos?'+new URLSearchParams({busca:search.value,grupo:group.value,pagina}));if(rev!==revision)return;stats.replaceChildren();for(const[k,t]of [['todos','Na base'],['pendentes','Não contatados'],['contatados','Contatos feitos'],['responderam','Responderam']]){const box=make('div');box.append(make('strong',String(r.totais[k])),make('span',t));stats.append(box);}tableBox.replaceChildren(r.contatos.length?table(r.contatos,async p=>{try{await abrirCampanha(p.campanhaId,false);show(p._id);}catch(e){erro(e);}}):make('p','Nenhum prospecto encontrado. Cadastre um contato ou ajuste os filtros.','crm-empty'));pager.replaceChildren();const prev=btn('← Anterior',()=>{pagina--;refresh();});prev.disabled=pagina<=1;const next=btn('Próxima →',()=>{pagina++;refresh();});next.disabled=pagina*25>=r.total;pager.append(prev,make('span',`${r.total} contatos · Página ${pagina}`),next);}catch(e){erro(e);}}
-  function show(numero){fichaNumero=numero;const p=snapshot?.contatos.find(x=>x._id===numero);if(!p)return;body.replaceChildren(make('h2',p.empresa),make('p',p._id+' · '+(p.segmento||'Segmento não informado')));const timeline=make('div',null,'crm-timeline');timeline.append(make('h3','Histórico da campanha'),make('strong',snapshot.campanha.nome));for(const[t,v]of [['Cadastrado',p.criadoEm],['Autorizado',p.aprovadoEm],['Tentativa de envio',p.tentativaEm],['Aceito pelo provedor',p.enviadoEm],['Última resposta',p.respostaEm],['Pedido de contratação',p.pedidoEm]])if(v)timeline.append(make('p',t+' · '+date(v)));if(!p.tentativaEm)timeline.append(make('p','Nenhum envio realizado.'));if(p.enviadoEm&&snapshot.campanha.modeloTexto)timeline.append(make('blockquote',snapshot.campanha.modeloTexto.replace('{{1}}',p.empresa)));timeline.append(make('small','Aceite do provedor não confirma leitura. Esta versão vincula cada prospecto a uma campanha.'));body.append(timeline);if(rows.has(numero))body.append(rows.get(numero));if(!dialog.open)dialog.showModal();}
+  function show(numero){
+    fichaNumero=numero;const p=snapshot?.contatos.find(x=>x._id===numero);if(!p)return;
+    body.replaceChildren(make('h2',p.empresa),make('p',p._id+' · '+(p.segmento||'Segmento não informado')));
+    const next=make('div',null,'crm-next-action');next.append(make('span','PRÓXIMA AÇÃO'));
+    if(p.estado==='aprovado'&&p.autorizado&&!p.tentativaEm){
+      next.append(make('strong','Este prospecto está pronto para receber a campanha.'),make('p','O envio será feito pela fila da campanha, dentro dos dias e horários configurados.'));
+      next.append(btn('Revisar e iniciar campanha →',()=>{dialog.close();area('detalhe');tab(2);detalhe.scrollIntoView({behavior:'smooth',block:'start'});},'btn forte'));
+    }else if(p.estado==='pendente'){
+      next.append(make('strong','Registre a autorização antes do envio.'),make('p','Preencha a evidência de autorização abaixo para liberar este prospecto.'));
+    }else if(p.tentativaEm){
+      next.append(make('strong','A campanha já foi enviada para este prospecto.'),make('p','Use “Abrir conversa” abaixo para acompanhar o atendimento quando disponível.'));
+    }else{
+      next.append(make('strong',labels[p.estado]||p.estado),make('p','Confira as ações disponíveis abaixo.'));
+    }
+    body.append(next);
+    const timeline=make('div',null,'crm-timeline');timeline.append(make('h3','Histórico da campanha'),make('strong',snapshot.campanha.nome));for(const[t,v]of [['Cadastrado',p.criadoEm],['Autorizado',p.aprovadoEm],['Tentativa de envio',p.tentativaEm],['Aceito pelo provedor',p.enviadoEm],['Última resposta',p.respostaEm],['Pedido de contratação',p.pedidoEm]])if(v)timeline.append(make('p',t+' · '+date(v)));if(!p.tentativaEm)timeline.append(make('p','Nenhum envio realizado.'));if(p.enviadoEm&&snapshot.campanha.modeloTexto)timeline.append(make('blockquote',snapshot.campanha.modeloTexto.replace('{{1}}',p.empresa)));timeline.append(make('small','Aceite do provedor não confirma leitura. Esta versão vincula cada prospecto a uma campanha.'));body.append(timeline);if(rows.has(numero))body.append(rows.get(numero));if(!dialog.open)dialog.showModal();
+  }
 
   async function novoProspecto(){
     try {
@@ -51,7 +68,17 @@ window.criarCRMProspeccao = function(api, abrirCampanha, criarCampanha) {
       f.onsubmit=async e=>{e.preventDefault();save.disabled=true;try{await api('/prospeccao/campanhas/'+encodeURIComponent(select.value)+'/contatos',{method:'POST',body:JSON.stringify(Object.fromEntries(Object.entries(campos).map(([k,i])=>[k,i.value])))});d.close();await refresh();}catch(err){feedback.textContent=err.message;}finally{save.disabled=false;}};d.showModal();
     }catch(e){erro(e);}
   }
-  function render(r){snapshot=r;const list=$('pros-contatos');rows=new Map(r.contatos.map((p,i)=>[p._id,list.children[i]]));list.replaceChildren(r.contatos.length?table(r.contatos,p=>show(p._id)):make('p','Esta campanha ainda não tem prospectos. Use “Adicionar prospecto” para começar.','crm-empty'));cadastro.querySelector('summary').textContent='+ Adicionar prospecto';if(fichaNumero)show(fichaNumero);if(view!=='detalhe')detalhe.hidden=true;}
+  function render(r){
+    snapshot=r;const list=$('pros-contatos');rows=new Map(r.contatos.map((p,i)=>[p._id,list.children[i]]));list.replaceChildren(r.contatos.length?table(r.contatos,p=>show(p._id)):make('p','Esta campanha ainda não tem prospectos. Use “Adicionar prospecto” para começar.','crm-empty'));cadastro.querySelector('summary').textContent='+ Adicionar prospecto';
+    const prontos=r.contatos.filter(p=>p.estado==='aprovado'&&p.autorizado&&!p.tentativaEm).length;
+    const start=$('pros-iniciar'),ativa=r.campanha.estado==='ativa';
+    start.textContent=ativa?`Campanha ativa · ${prontos} aguardando envio`:`Iniciar campanha · ${prontos} ${prontos===1?'prospecto pronto':'prospectos prontos'}`;
+    start.dataset.crmDisabled=String(ativa||prontos===0);start.disabled=ativa||prontos===0;
+    sendSummary.replaceChildren(make('span','ENVIO DA CAMPANHA'),make('h3',ativa?'Campanha em andamento':prontos?`${prontos} ${prontos===1?'prospecto está pronto':'prospectos estão prontos'} para envio`:'Nenhum prospecto pronto para envio'));
+    const janela=r.campanha.janela||{dias:[1,2,3,4,5],inicio:'09:00',fim:'18:00'};
+    sendSummary.append(make('p',ativa?'A fila está ativa e enviará os contatos no horário configurado.':prontos?'Ao iniciar, todos os prospectos prontos desta campanha entram na fila. O intervalo e o limite diário continuam valendo.':'Autorize pelo menos um prospecto antes de iniciar.'),make('p',`Janela: ${janela.inicio||'09:00'}–${janela.fim||'18:00'} · fuso de São Paulo.`));
+    if(fichaNumero)show(fichaNumero);if(view!=='detalhe')detalhe.hidden=true;
+  }
   area('base');
   return {refresh,render,open(){area('detalhe');tab(0);},reset(){revision++;root.querySelectorAll('dialog[open]').forEach(d=>d.close());rows.clear();snapshot=null;pagina=1;search.value='';group.value='';tableBox.replaceChildren();stats.replaceChildren();area('base');}};
 };

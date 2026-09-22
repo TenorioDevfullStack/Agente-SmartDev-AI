@@ -14,7 +14,7 @@ window.criarPainelProspeccao = function(api) {
     const botoes = [...document.querySelectorAll('[data-vista="prospeccao"] button')];
     const anteriores = botoes.map(b => b.disabled); botoes.forEach(b => b.disabled = true);
     try { await fn(); } catch (err) { if (err.message !== 'nao autorizado') el('pros-erro').textContent = err.message; }
-    finally { ocupado = false; botoes.forEach((b, i) => b.disabled = anteriores[i]); }
+    finally { ocupado = false; botoes.forEach((b, i) => b.disabled = Object.hasOwn(b.dataset, 'crmDisabled') ? b.dataset.crmDisabled === 'true' : anteriores[i]); }
   }
   function botao(texto, fn) { const b = node('button', texto, 'btn'); b.type = 'button'; b.addEventListener('click', () => acao(fn)); return b; }
   const crm = window.criarCRMProspeccao(api, async (id, mostrar = true) => { selecionada = id; await detalhe(); if (mostrar) crm.open(); }, async nome => { const r = await request('/campanhas/nova', { nome }); selecionada = r.id; await carregar(); crm.open(); });
