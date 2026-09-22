@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { validarOferta, decidirVenda, janelaAberta, pedeHumano, promptComercial } from '../agente/prospeccao-vendas.mjs';
+import { validarOferta, decidirVenda, janelaAberta, pedeHumano, promptComercial, respostaInicialPositiva } from '../agente/prospeccao-vendas.mjs';
 import { OFERTA_LANCAMENTO } from '../agente/prospeccao-oferta.mjs';
 import { classificarResposta } from '../agente/prospeccao.mjs';
 
@@ -22,6 +22,13 @@ test('O modelo não controla preços nem URLs, mesmo quando tenta injetar texto'
   assert.throws(() => decidirVenda('{"acao":"faq","indice":90}', OFERTA_LANCAMENTO, {}));
 });
 
+test('Confirmação inicial curta continua com o agente', () => {
+  for (const mensagem of ['sim', 'Sim!', 'pode apresentar', 'quero saber mais', 'tenho interesse']) assert.equal(respostaInicialPositiva(mensagem), true);
+  for (const mensagem of ['não', 'atendente', 'quero marcar uma demonstração', 'quanto custa?']) assert.equal(respostaInicialPositiva(mensagem), false);
+  const r = decidirVenda('{"acao":"apresentar"}', OFERTA_LANCAMENTO, { turnosVenda: 0 });
+  assert.equal(r.acao, 'apresentar');
+  assert.match(r.mensagem, /assistente.*WhatsApp/i);
+});
 test('Interesse comercial concreto é encaminhado para atendimento personalizado', () => {
   const r = decidirVenda('{"acao":"interesse"}', OFERTA_LANCAMENTO, {});
   assert.equal(r.acao, 'interesse');

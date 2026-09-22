@@ -96,6 +96,13 @@ try {
   await f.servico.receber(expirou, 'Olá'); await f.servico.responder(expirou, new Date(f.agora().getTime() - 86400000));
   assert.equal((await f.db.collection('prospeccao_contatos').findOne({ _id: expirou })).estado, 'humano');
 
+  const confirmou = await contato('1009');
+  const antesConfirmacao = f.respostas.length;
+  await mensagem('sim', { acao: 'humano' }, confirmou);
+  assert.equal(f.respostas.length, antesConfirmacao + 1);
+  assert.equal((await f.db.collection('prospeccao_contatos').findOne({ _id: confirmou })).estado, 'conversando');
+  assert.equal((await f.db.collection('conversas').findOne({ _id: confirmou })).pausado, false);
+  assert.match(f.respostas.at(-1).texto, /assistente.*WhatsApp/i);
   const interessado = await contato('1008');
   const antesInteresse = f.respostas.length;
   await mensagem('Quero marcar uma demonstração e conversar sobre a implantação', { acao: 'interesse' }, interessado);

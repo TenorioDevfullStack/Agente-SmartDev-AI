@@ -37,6 +37,10 @@ export const normalizar = t => String(t || '').normalize('NFD').replace(/[\u0300
 export function pedeHumano(t) {
   return /^(humano|humana|atendente)[.!?\s]*$|(?:quero|preciso|prefiro|posso|gostaria de)\s+(?:falar|conversar)\s+com\s+(?:(?:um|uma|o|a)\s+)?(?:humano|humana|atendente|pessoa|alguem|responsavel)|(?:quero|prefiro)\s+(?:(?:um|uma)\s+)?(?:humano|humana|atendente)|pessoa de verdade/.test(normalizar(t));
 }
+export function respostaInicialPositiva(t) {
+  const valor = normalizar(t).trim().replace(/[.!?]+$/g, '').trim();
+  return /^(sim|sim,? (?:claro|pode|por favor)|claro|pode|pode sim|quero|quero sim|tenho interesse|gostaria|gostaria sim|quero saber mais|pode apresentar|pode explicar)$/.test(valor);
+}
 export function janelaAberta(recebidoEm, agora) {
   const idade = agora.getTime() - new Date(recebidoEm).getTime();
   return Number.isFinite(idade) && idade >= -60000 && idade < 24 * 60 * 60 * 1000;
@@ -143,9 +147,15 @@ export function criarVendasProspeccao(db, { inferir, enviar, registrarSaida, val
       const oferta = validarOferta(c.oferta);
       await verificar();
       await validarTransporte();
-      decisao = await etapa('venda-decisao', async () => decidirVenda(await inferir(promptComercial(oferta, p, conv?.mensagens || []), numero, verificar), oferta, p, await promocao?.status()));
+      const promocaoAtual = await promocao?.status();
+      if ((p.turnosVenda || 0) === 0 && respostaInicialPositiva(p.ultimaResposta)) {
+        decisao = await etapa('venda-decisao', async () => decidirVenda('{"acao":"apresentar"}', oferta, p, promocaoAtual));
+      } else {
+        decisao = await etapa('venda-decisao', async () => decidirVenda(await inferir(promptComercial(oferta, p, conv?.mensagens || []), numero, verificar), oferta, p, promocaoAtual));
+      }
       await verificar();
-    } catch {
+    } catch (err) {
+      console.error('[PROSPECÇÃO] Automação comercial interrompida para ' + numero + ':', err?.message || err);
       await encaminhar(numero, 'Automação interrompida ou resposta sem base aprovada. Revise a conversa.'); return;
     }
     if (decisao.acao === 'recusar') {

@@ -58,6 +58,8 @@ Inspeção de código e documentação; não representa verificação da operaç
 
 ## Próximos trabalhos
 
+- Em 22/09/2026, teste real revelou pausa indevida após a primeira resposta curta “sim” à campanha. A causa exata do evento de produção não foi preservada nos logs apresentados, mas o fluxo tinha uma fragilidade confirmada: dependia da classificação do LLM e qualquer ação inadequada, JSON inválido ou falha pausava por segurança. Implementada continuação determinística para confirmações iniciais positivas (“sim”, “pode apresentar”, “quero saber mais” e equivalentes), mantendo a conversa automática; falhas futuras agora registram a causa no log. Onze testes unitários aprovados; integração com MongoDB preparada e ainda não executada localmente porque o Docker Desktop estava desligado.
+
 - Em 22/09/2026, implementada exclusão administrativa do prospecto pela ficha para reiniciar testes. A ação exige confirmação, remove cadastro, conversa, mensagens, lead, recados, agendamentos e tarefas daquele número, preserva auditoria e bloqueia contratação confirmada ou mensagem em processamento. Sintaxe validada; integração automatizada preparada, mas a execução local aguarda MongoDB porque o Docker Desktop estava desligado.
 
 - Evidência de produção em 22/09/2026: após atualização da VPS até o commit 20e6b72, scripts/verificar-prontidao-vps.sh aprovou os sete serviços, painel HTTP local, WhatsApp autenticado, timers de monitoramento e backup ativos, backup externo verificado há 16 horas e disco em 8%. Infraestrutura liberada para teste comercial assistido; o fluxo real completo ainda precisa ser exercitado antes de concluir o primeiro marco.
