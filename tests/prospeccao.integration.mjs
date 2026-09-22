@@ -60,17 +60,23 @@ try {
   const repetida = await req('/prospeccao/previa', csv, 'POST', { 'content-type': 'application/octet-stream', 'x-arquivo-nome': 'leads.csv' }); assert.ok(repetida.data.linhas.every(l => l.erro));
   await req(`/prospeccao/campanhas/${id}/iniciar`, {}); f.falhar(); await f.servico.executar(); assert.equal(f.enviados.length, 2);
   assert.equal((await f.db.collection('prospeccao_contatos').findOne({ _id: '5511999990002' })).estado, 'revisao');
+  assert.equal((await req('/prospeccao/contatos/5511999990002', { acao: 'confirmar_envio' }, 'PATCH')).status, 200);
+  assert.equal((await f.db.collection('prospeccao_contatos').findOne({ _id: '5511999990002' })).estado, 'enviado');
+  assert.equal((await req('/prospeccao/contatos/5511999990002', { acao: 'liberar_reenvio' }, 'PATCH')).status, 400);
   f.avancar(); await f.servico.executar(); assert.equal(f.enviados.length, 2);
   await f.db.collection('prospeccao_contatos').updateOne({ _id: '5511999990003' }, { $set: { estado: 'enviando' } });
   await f.db.collection('prospeccao_campanhas').updateOne({ _id: id }, { $set: { estado: 'ativa' } });
   const novo = criarProspeccao(f.db, { transporte: f.transporte, registrarSaida: f.registrarSaida }); await novo.preparar();
   assert.equal((await f.db.collection('prospeccao_contatos').findOne({ _id: '5511999990003' })).estado, 'revisao');
   assert.equal((await f.db.collection('prospeccao_campanhas').findOne({ _id: id })).estado, 'pausada');
+  assert.equal((await req('/prospeccao/contatos/5511999990003', { acao: 'liberar_reenvio' }, 'PATCH')).status, 200);
+  const liberado = await f.db.collection('prospeccao_contatos').findOne({ _id: '5511999990003' });
+  assert.equal(liberado.estado, 'aprovado'); assert.equal(liberado.tentativaEm, undefined);
   await f.db.collection('prospeccao_contatos').insertOne({ _id: '5511999990004', estado: 'aprovado', autorizado: true });
   assert.equal(await f.servico.receber('5511999990004', 'Não mande mensagens'), true);
   assert.equal((await f.db.collection('prospeccao_contatos').findOne({ _id: '5511999990004' })).autorizado, false);
   // Revogar o papel na sessão impede acesso à rota de administração.
   await f.db.collection('painel_usuarios').updateOne({ _id: 'administrador-inicial' }, { $set: { papel: 'atendente' } });
   assert.equal((await req('/prospeccao', undefined, 'GET')).status, 403);
-  console.log('PASS: autenticação, importação persistida, autorização, concorrência, pausa, bot, recusa, deduplicação, falha incerta e reinício.');
+  console.log('PASS: autenticação, importação persistida, autorização, concorrência, pausa, bot, recusa, deduplicação, resolução de envio incerto e reinício.');
 } finally { await f.fechar(); }

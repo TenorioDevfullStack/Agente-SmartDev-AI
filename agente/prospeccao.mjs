@@ -228,6 +228,33 @@ export function criarProspeccao(db, { transporte, registrarSaida, vendas, agora 
         await db.collection('conversas').updateOne({ _id: p._id }, { $set: { pausado: true, pausaOrigem: 'prospeccao' }, $inc: { versaoHumana: 1 } }, { upsert: true });
         await auditar(req.usuario, 'assumir', p._id); return res.json({ ok: true });
       }
+      if (req.body?.acao === 'confirmar_envio') {
+        if (p.estado !== 'revisao') return res.status(400).json({ erro: 'Este prospecto não possui um envio aguardando revisão.' });
+        const comercialIncerto = Boolean(p.envioVendaPendente);
+        await contatos.updateOne({ _id: p._id }, {
+          $set: {
+            estado: comercialIncerto ? 'humano' : 'enviado',
+            ...(p.enviadoEm ? {} : { enviadoEm: agora() }),
+            envioVendaPendente: false,
+            observacao: comercialIncerto
+              ? 'Resposta comercial confirmada manualmente no WhatsApp. Atendimento mantido com uma pessoa até nova retomada.'
+              : 'Envio confirmado manualmente no WhatsApp pelo administrador.',
+          },
+        });
+        if (comercialIncerto) await db.collection('conversas').updateOne({ _id: p._id }, { $set: { pausado: true, pausaOrigem: 'prospeccao' }, $inc: { versaoHumana: 1 } }, { upsert: true });
+        await auditar(req.usuario, 'confirmar_envio', p._id, { comercialIncerto });
+        return res.json({ ok: true, estado: comercialIncerto ? 'humano' : 'enviado' });
+      }
+      if (req.body?.acao === 'liberar_reenvio') {
+        if (p.estado !== 'revisao' || p.envioVendaPendente || p.enviadoEm) return res.status(400).json({ erro: 'Uma resposta ou mensagem já aceita não pode ser reenviada por esta ação. Abra a conversa e continue manualmente.' });
+        await contatos.updateOne({ _id: p._id }, {
+          $set: { estado: 'aprovado', observacao: 'Administrador confirmou no WhatsApp que a apresentação não foi enviada; nova tentativa liberada.' },
+          $unset: { tentativaEm: '', diaTentativa: '', mensagemId: '' },
+        });
+        await db.collection('conversas').updateOne({ _id: p._id }, { $set: { pausado: false, pausaOrigem: null, responsavel: null }, $inc: { versaoHumana: 1 } }, { upsert: true });
+        await auditar(req.usuario, 'liberar_reenvio', p._id);
+        return res.json({ ok: true, estado: 'aprovado' });
+      }
       if (req.body?.acao === 'retomar_conversa') {
         const retomada = await retomarConversa(p._id, req.usuario);
         if (!retomada.ok) return res.status(400).json({ erro: retomada.erro });

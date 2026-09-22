@@ -109,6 +109,10 @@ try {
   const aposFalha = f.respostas.length; await fila.executar('entrada'); assert.equal(f.respostas.length, aposFalha);
   assert.equal((await f.db.collection('prospeccao_contatos').findOne({ _id: incerto })).estado, 'revisao');
   assert.equal((await req(`/prospeccao/contatos/${incerto}`, { acao: 'retomar_conversa' }, 'PATCH')).status, 400);
+  assert.equal((await req(`/prospeccao/contatos/${incerto}`, { acao: 'liberar_reenvio' }, 'PATCH')).status, 400);
+  assert.equal((await req(`/prospeccao/contatos/${incerto}`, { acao: 'confirmar_envio' }, 'PATCH')).status, 200);
+  const respostaConferida = await f.db.collection('prospeccao_contatos').findOne({ _id: incerto });
+  assert.equal(respostaConferida.estado, 'humano'); assert.equal(respostaConferida.envioVendaPendente, false);
 
   // Nove vagas restantes: onze confirmações concorrentes só podem usar nove.
   const resultados = await Promise.allSettled(Array.from({ length: 11 }, (_, i) => f.promocao.confirmar({ clienteId: `empresa-${i}`, numero: `551188888${String(i).padStart(4, '0')}`, referencia: `contrato-teste-${i}`, usuario })));

@@ -51,6 +51,7 @@ A [política oficial do WhatsApp](https://whatsappbusiness.com/policy/) exige au
 - Pausar aguarda uma chamada já iniciada, que não pode ser desfeita.
 - A desativação do administrador iniciador pausa a campanha no próximo ciclo.
 - O estado "Aceito pelo WhatsApp" indica aceite do provedor, não confirmação de entrega ou leitura.
+- **Revisar envio** significa que uma queda, reinício ou resposta incerta impediu o sistema de comprovar o resultado. Abra a ficha e confira o WhatsApp: use **A mensagem foi enviada** quando ela estiver no histórico; use **Não foi enviada · liberar nova tentativa** somente quando confirmar que a apresentação inicial não apareceu. Respostas comerciais incertas nunca são repetidas automaticamente e permanecem em atendimento humano.
 - Não há follow-up automático. Diálogo comercial depende da ativação expressa do modo automático e da oferta salva.
 - Cada campanha permite configurar no painel os dias da semana e a janela de envio no fuso America/Sao_Paulo; o padrão continua segunda a sexta, 09:00–18:00. Respostas de conversas já iniciadas seguem as regras próprias do diálogo.
 - Respostas são classificadas por regras conservadoras. No modo automático, mensagens elegíveis seguem para o módulo comercial; provável bot/menu, exceção ou recusa permanecem sob revisão humana. A classificação não é certeza. Não navega menus nem responde a pedidos de CPF/consulta.

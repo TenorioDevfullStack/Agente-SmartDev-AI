@@ -43,7 +43,14 @@ window.criarCRMProspeccao = function(api, abrirCampanha, criarCampanha) {
     fichaNumero=numero;const p=snapshot?.contatos.find(x=>x._id===numero);if(!p)return;
     body.replaceChildren(make('h2',p.empresa),make('p',p._id+' · '+(p.segmento||'Segmento não informado')));
     const next=make('div',null,'crm-next-action');next.append(make('span','PRÓXIMA AÇÃO'));
-    if(p.estado==='aprovado'&&p.autorizado&&!p.tentativaEm){
+    if(p.estado==='revisao'){
+      next.append(make('strong','O resultado deste envio precisa ser conferido.'),make('p',p.observacao||'Abra o WhatsApp e confirme se a mensagem apareceu antes de escolher uma ação.'));
+      const actions=make('div',null,'cartao-acoes');
+      actions.append(btn('Abrir conversa',()=>{dialog.close();document.dispatchEvent(new CustomEvent('prospeccao:abrir-conversa',{detail:p._id}));}));
+      actions.append(btn('A mensagem foi enviada',async()=>{if(!confirm('Confirma que você conferiu no WhatsApp e encontrou a mensagem enviada?'))return;try{await api('/prospeccao/contatos/'+encodeURIComponent(p._id),{method:'PATCH',body:JSON.stringify({acao:'confirmar_envio'})});await abrirCampanha(p.campanhaId,false);show(p._id);await refresh();}catch(e){erro(e);}},'btn forte'));
+      if(!p.envioVendaPendente&&!p.enviadoEm)actions.append(btn('Não foi enviada · liberar nova tentativa',async()=>{if(!confirm('Confirma que verificou o WhatsApp e a mensagem NÃO foi enviada? Uma nova tentativa poderá gerar duplicidade se essa confirmação estiver errada.'))return;try{await api('/prospeccao/contatos/'+encodeURIComponent(p._id),{method:'PATCH',body:JSON.stringify({acao:'liberar_reenvio'})});dialog.close();await abrirCampanha(p.campanhaId,false);tab(2);await refresh();}catch(e){erro(e);}}));
+      next.append(actions,make('small','Nunca libere uma nova tentativa sem conferir o histórico no WhatsApp.'));
+    }else if(p.estado==='aprovado'&&p.autorizado&&!p.tentativaEm){
       next.append(make('strong','Este prospecto está pronto para receber a campanha.'),make('p','O envio será feito pela fila da campanha, dentro dos dias e horários configurados.'));
       next.append(btn('Revisar e iniciar campanha →',()=>{dialog.close();area('detalhe');tab(2);detalhe.scrollIntoView({behavior:'smooth',block:'start'});},'btn forte'));
     }else if(p.estado==='pendente'){
