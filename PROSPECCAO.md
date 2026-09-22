@@ -74,3 +74,11 @@ Importações, aprovações, bloqueios, início/pausa e tentativas de envio são
 Validação no navegador utilizou a planilha pública das clínicas e banco temporário: 7 linhas válidas, 3 com dois telefones. Nenhuma mensagem real foi enviada. Envio pela API oficial ainda precisa de validação com número de teste autorizado após configurar a conexão.
 
 Validação adicional em 21/09/2026: 17 testes unitários/regressão aprovados e as duas suites de integração de prospecção aprovadas com MongoDB isolado. Navegador confirmou importação fictícia, seleção da oferta, persistência após recarregar, início simulado e confirmação promocional de 0 para 1. Capturas desktop/mobile em `tests/prospeccao-vendas-*.png`. Foram corrigidos contraste de textarea e preservação dos rascunhos de autorização/fechamento durante atualização. Sintaxe TypeScript do servidor aprovada para Node 22. IA e WhatsApp foram simulados; não comprova qualidade do LLM real nem operação ao vivo.
+
+## Navegação da base comercial
+
+A aba Prospecção abre a base de prospectos com busca por empresa/telefone, filtros Todos / Ainda não contatados / Contatos feitos / Responderam / Não contatar e páginas de 25 registros. “Novo prospecto” abre cadastro direto com seleção de campanha em rascunho ou pausada. Se não houver campanha disponível, crie uma em Campanhas, sem planilha.
+
+“Ver ficha” mostra a campanha vinculada, eventos registrados, mensagem inicial quando disponível e as ações de autorização/atendimento. Datas aparecem no fuso São Paulo. Aceite pelo provedor não comprova entrega ou leitura. O modelo atual permite uma campanha por telefone; a interface não cria histórico fictício de múltiplos envios.
+
+Campanhas organiza três áreas: Prospectos da campanha, Oferta e horários, Revisar e iniciar. Importação continua numa área própria. Autorização, limites, bloqueio de duplicidade e controle de envio permanecem no servidor.

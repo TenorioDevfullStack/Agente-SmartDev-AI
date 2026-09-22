@@ -117,3 +117,11 @@ Inspeção de código e documentação; não representa verificação da operaç
 - Atualizar este arquivo conforme novas decisões; não registrar credenciais.
 - Não confundir disponibilidade 24x7 com autonomia comercial ilimitada: exceções e desconexões podem exigir intervenção humana.
 - A memória está nestes arquivos do projeto. Sessões sem acesso a eles não têm garantia de recuperar o contexto.
+
+## Interface de prospecção — revisão de 21/09/2026
+
+- Decisão: usuário solicitou reorganização visual, base de prospectos pesquisável, separação dos contatos feitos e histórico individual.
+- Implementação local: navegação Prospectos / Campanhas / Importar lista; busca e filtros com paginação de 25 registros; indicadores da base; cadastro direto em formulário lateral; criação de campanha vazia; ficha individual com campanha, datas de autorização/tentativa/aceite/resposta e ações existentes. Configuração separada em prospectos, oferta/horários e revisão/início. CSS responsivo e foco acessível, sem nova dependência de produção.
+- Limite preservado: cada telefone continua vinculado a uma campanha; não há múltiplas participações nem reenvio de contatos já tentados. O histórico mostra eventos disponíveis, não confirmação de entrega/leitura.
+- Validação: regressão prospeccao.integration.mjs e nova prospeccao-crm.integration.mjs passaram com MongoDB isolado e transporte simulado. Navegador verificou criação de campanha, cadastro, tabela, ficha e autorização em desktop/celular; sem erro de JavaScript observado. Sem envio WhatsApp real nesta entrega.
+- Publicação desta revisão no GitHub e na VPS ainda pendente. Evidência anterior do usuário confirma instalação da versão anterior via GitHub na VPS; não extrapolar para esta revisão.

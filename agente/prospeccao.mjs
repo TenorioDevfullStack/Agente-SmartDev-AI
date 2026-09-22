@@ -102,6 +102,27 @@ export function criarProspeccao(db, { transporte, registrarSaida, vendas, agora 
     router.use((req, res, next) => req.usuario?.papel === 'admin' ? next() : res.status(403).json({ erro: 'Somente administradores podem gerenciar prospecção.' }));
     const rota = fn => (req, res, next) => Promise.resolve(fn(req, res)).catch(next);
     router.get('/', rota(async (_req, res) => res.json({ campanhas: await campanhas.find({}).sort({ criadoEm: -1 }).limit(100).toArray() })));
+    router.get('/prospectos', rota(async (req, res) => {
+      const pagina = Math.max(1, Math.min(10000, Number.parseInt(req.query.pagina, 10) || 1));
+      const filtro = {};
+      const busca = String(req.query.busca || '').trim().slice(0, 100);
+      if (busca) { const regex = busca.replace(/[.*+?^$\{\}()|[\]\\]/g, '\\$&'); filtro.$or = [{ empresa: { $regex: regex, $options: 'i' } }, { _id: { $regex: regex } }]; }
+      if (req.query.grupo === 'pendentes') filtro.tentativaEm = { $exists: false };
+      if (req.query.grupo === 'contatados') filtro.tentativaEm = { $exists: true };
+      if (req.query.grupo === 'responderam') filtro.respostaEm = { $exists: true };
+      if (req.query.grupo === 'bloqueados') filtro.estado = 'nao_contatar';
+      const lista = await contatos.find(filtro).sort({ criadoEm: -1, _id: 1 }).skip((pagina - 1) * 25).limit(25).toArray();
+      const ids = [...new Set(lista.map(p => p.campanhaId))];
+      const cs = await campanhas.find({ _id: { $in: ids } }).project({ nome: 1 }).toArray();
+      res.json({ contatos: lista.map(p => ({ ...p, campanhaNome: cs.find(c => c._id === p.campanhaId)?.nome || 'Campanha indisponível' })), pagina, total: await contatos.countDocuments(filtro), totais: { todos: await contatos.countDocuments({}), contatados: await contatos.countDocuments({ tentativaEm: { $exists: true } }), responderam: await contatos.countDocuments({ respostaEm: { $exists: true } }), pendentes: await contatos.countDocuments({ tentativaEm: { $exists: false } }) } });
+    }));
+    router.post('/campanhas/nova', rota(async (req, res) => exclusivo(async () => {
+      const nome = String(req.body?.nome || '').trim().slice(0, 100);
+      if (!nome) return res.status(400).json({ erro: 'Informe o nome da campanha.' });
+      const id = randomUUID();
+      await campanhas.insertOne({ _id: id, nome, estado: 'rascunho', criadoEm: agora(), usuario: req.usuario, importados: 0 });
+      await auditar(req.usuario, 'criar', id); res.status(201).json({ id });
+    })));
     router.get('/oferta-padrao', rota(async (_req, res) => res.json({ oferta: OFERTA_LANCAMENTO, promocao: await promocao.status() })));
     router.get('/modelos', rota(async (_req, res) => {
       try { res.json({ modelos: await transporte.listar() }); }

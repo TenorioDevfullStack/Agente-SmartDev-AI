@@ -17,6 +17,7 @@ window.criarPainelProspeccao = function(api) {
     finally { ocupado = false; botoes.forEach((b, i) => b.disabled = anteriores[i]); }
   }
   function botao(texto, fn) { const b = node('button', texto, 'btn'); b.type = 'button'; b.addEventListener('click', () => acao(fn)); return b; }
+  const crm = window.criarCRMProspeccao(api, async (id, mostrar = true) => { selecionada = id; await detalhe(); if (mostrar) crm.open(); }, async nome => { const r = await request('/campanhas/nova', { nome }); selecionada = r.id; await carregar(); crm.open(); });
   const camposOferta = ['nome', 'escopo', 'prazo', 'condicoes'];
   function marcarOferta() { ofertaSuja = true; el('pros-oferta-aviso').textContent = 'Alterações não salvas. Salve a oferta antes de iniciar.'; }
   function mostrarModo() { el('pros-oferta-dados').hidden = el('pros-modo').value !== 'automatico'; }
@@ -81,7 +82,7 @@ window.criarPainelProspeccao = function(api) {
   el('pros-criar').addEventListener('submit', ev => { ev.preventDefault(); acao(async () => {
     const r = await request('/campanhas', { previaId: previa, nome: el('pros-nome').value });
     selecionada = r.id; previa = null; el('pros-criar').hidden = true; el('pros-previa').replaceChildren(node('p', `${r.inseridos} contatos importados. Revise as autorizações abaixo.`));
-    await carregar();
+    await carregar(); crm.open();
   }); });
   function textoModelo() {
     const m = modelos[Number(el('pros-modelo').value)]; el('pros-texto').textContent = m?.texto || 'Nenhum modelo disponível. Use Atualizar após configurar um modelo aprovado.';
@@ -98,9 +99,10 @@ window.criarPainelProspeccao = function(api) {
     const g = geracao;
     const r = await api('/prospeccao'); if (g !== geracao) return;
     el('pros-campanhas').replaceChildren();
-    if (!r.campanhas.length) el('pros-campanhas').append(node('p', 'Nenhuma campanha. Importe uma planilha para começar.'));
-    r.campanhas.forEach(c => el('pros-campanhas').append(botao(`${c.nome} · ${estados[c.estado] || c.estado}`, async () => { selecionada = c._id; await detalhe(); })));
+    if (!r.campanhas.length) el('pros-campanhas').append(node('p', 'Nenhuma campanha ainda. Crie sua primeira campanha acima.'));
+    r.campanhas.forEach(c => el('pros-campanhas').append(botao(`${c.nome} · ${estados[c.estado] || c.estado}`, async () => { selecionada = c._id; await detalhe(); crm.open(); })));
     if (selecionada) await detalhe();
+    await crm.refresh();
   }
   async function detalhe() {
     const id = selecionada, g = geracao, r = await api(`/prospeccao/campanhas/${encodeURIComponent(id)}`);
@@ -154,11 +156,13 @@ window.criarPainelProspeccao = function(api) {
         }); }); row.append(form);
       }
       if (p.tentativaEm) row.append(botao('Abrir conversa', async () => {
+        document.querySelector('.crm-drawer[open]')?.close();
         document.querySelector('#abas button[data-aba="conversas"]').click();
         document.dispatchEvent(new CustomEvent('prospeccao:abrir-conversa', { detail: p._id }));
       }));
       el('pros-contatos').append(row);
     });
+    crm.render(r);
   }
   el('pros-atualizar').addEventListener('click', () => acao(async () => { await carregarModelos(); await carregar(); }));
   el('pros-iniciar').addEventListener('click', () => acao(async () => {
@@ -171,7 +175,7 @@ window.criarPainelProspeccao = function(api) {
   el('pros-pausar').addEventListener('click', () => acao(async () => { await request(`/campanhas/${selecionada}/pausar`, {}); await carregar(); }));
   return {
     abrir: () => acao(async () => { await carregarModelos(); await carregar(); }),
-    atualizar: async () => { if (!ocupado && !el('pros-contatos').contains(document.activeElement) && !el('pros-oferta-form').contains(document.activeElement)) await acao(carregar); },
-    limpar() { geracao++; previa = null; selecionada = null; modelos = []; ofertaSuja = false; ofertaCampanha = null; rascunhosContato.clear(); ['pros-previa','pros-campanhas','pros-contatos'].forEach(id => el(id).replaceChildren()); preencherOferta(); el('pros-criar').hidden = true; el('pros-detalhe').hidden = true; el('pros-arquivo').value = ''; el('pros-nome').value = ''; },
+    atualizar: async () => { if (!ocupado && !document.querySelector('.crm-drawer[open]') && !el('pros-contato-form').contains(document.activeElement) && !el('pros-contatos').contains(document.activeElement) && !el('pros-oferta-form').contains(document.activeElement)) await acao(carregar); },
+    limpar() { crm.reset(); geracao++; previa = null; selecionada = null; modelos = []; ofertaSuja = false; ofertaCampanha = null; rascunhosContato.clear(); ['pros-previa','pros-campanhas','pros-contatos'].forEach(id => el(id).replaceChildren()); preencherOferta(); el('pros-criar').hidden = true; el('pros-detalhe').hidden = true; el('pros-arquivo').value = ''; el('pros-nome').value = ''; },
   };
 };
