@@ -1,6 +1,13 @@
 (async () => {
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const check = (ok, message) => { if (!ok) throw new Error(message); };
+  localStorage.removeItem('smartdev-alertas-dispensados');
+  await wait(5200);
+  check(!document.querySelector('#alerta-global').hidden, 'Alerta operacional não apareceu');
+  document.querySelector('#fechar-alertas').click();
+  check(document.querySelector('#alerta-global').hidden, 'Alerta não foi dispensado');
+  await wait(5200);
+  check(document.querySelector('#alerta-global').hidden, 'Alerta dispensado reapareceu sem mudança');
   const type = text => { const el = document.querySelector('#campo-msg'); el.value = text; el.dispatchEvent(new Event('input', { bubbles: true })); return el; };
   const first = type('Olá, posso ajudar sua empresa.');
   first.focus(); first.setSelectionRange(5, 8);
@@ -33,5 +40,5 @@
   document.querySelector('#btn-pausa').click(); await wait(700);
   check(document.querySelector('#btn-pausa').textContent.includes('Assumir'), 'Retomada falhou');
   check(document.querySelector('#campo-msg').getBoundingClientRect().bottom <= innerHeight, 'Editor fora da tela');
-  return 'PASS: polling, foco, seleção, rolagem, rascunhos por contato, envio, falha, pausa e retomada.';
+  return 'PASS: alerta dispensável, polling, foco, seleção, rolagem, rascunhos por contato, envio, falha, pausa e retomada.';
 })();

@@ -96,6 +96,12 @@ try {
   f.antesInferir(async () => { await req('/prospeccao/campanhas/vendas/pausar', {}); });
   const qtd = f.respostas.length; await mensagem('Pode explicar', { acao: 'apresentar' }, pausar); assert.equal(f.respostas.length, qtd);
   f.antesInferir(async () => {});
+  const retomadaIndividual = await f.servico.retomarConversa(pausar, usuario);
+  assert.equal(retomadaIndividual.ok, true);
+  assert.equal((await f.db.collection('prospeccao_campanhas').findOne({ _id: 'vendas' })).estado, 'pausada');
+  assert.ok((await f.db.collection('prospeccao_contatos').findOne({ _id: pausar })).retomadaIndividualEm);
+  await mensagem('Gostaria de continuar', { acao: 'apresentar', mensagem: 'Claro! Podemos continuar de onde paramos. Você quer entender melhor o atendimento, a implantação ou os valores?' }, pausar);
+  assert.equal(f.respostas.length, qtd + 1);
   await req('/prospeccao/campanhas/vendas/iniciar', {});
 
   const incerto = await contato('1007'); f.falharResposta();
@@ -111,5 +117,5 @@ try {
   const reiniciada = criarPromocao(f.db); await reiniciada.preparar(); assert.equal((await reiniciada.status()).restantes, 0);
   await f.servico.preparar();
   assert.equal((await f.db.collection('prospeccao_campanhas').findOne({ _id: 'vendas' })).estado, 'pausada');
-  console.log('PASS: fluxo comercial, preços, FAQ, pedido, confirmação, idempotência, recusa, intervenção, pausa, bot, janela, falha incerta e dez promoções concorrentes.');
+  console.log('PASS: fluxo comercial, retomada individual com campanha pausada, preços, FAQ, pedido, confirmação, idempotência, recusa, intervenção, pausa, bot, janela, falha incerta e dez promoções concorrentes.');
 } finally { fila?.parar(); await f.fechar(); }

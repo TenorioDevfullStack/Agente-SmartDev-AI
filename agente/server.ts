@@ -1517,6 +1517,15 @@ api.post(
       estadosIA.delete(numero);
     }
 
+    if (!pausado) {
+      const retomada = await prospeccao.retomarConversa(numero, req.usuario);
+      if (retomada?.prospecto) {
+        if (!retomada.ok) return res.status(409).json({ erro: retomada.erro });
+        console.log(`[PAINEL] ${numero}: prospecção reativada`);
+        return res.json({ ok: true, pausado: false });
+      }
+    }
+
     await db
       .collection("conversas")
       .updateOne({ _id: numero }, {

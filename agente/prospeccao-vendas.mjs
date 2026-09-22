@@ -111,6 +111,7 @@ export function decidirVenda(raw, oferta, contato, promocao) {
 // acesso a pagamentos nem liberdade para criar preços, contratos ou URLs.
 export function criarVendasProspeccao(db, { inferir, enviar, registrarSaida, validarTransporte, promocao, agora = () => new Date() }) {
   const contatos = db.collection('prospeccao_contatos'), campanhas = db.collection('prospeccao_campanhas'), conversas = db.collection('conversas');
+  const permiteDialogo = (campanha, contato) => ['ativa', 'concluida'].includes(campanha?.estado) || (campanha?.estado === 'pausada' && Boolean(contato?.retomadaIndividualEm));
   async function encaminhar(numero, observacao, estado = 'humano') {
     await contatos.updateOne({ _id: numero, estado: { $ne: 'nao_contatar' } }, { $set: { estado, etapaVenda: 'humano', observacao } });
     await conversas.updateOne({ _id: numero, pausado: { $ne: true } }, { $set: { pausado: true, pausaOrigem: 'prospeccao' } });
@@ -119,7 +120,7 @@ export function criarVendasProspeccao(db, { inferir, enviar, registrarSaida, val
     const p = await contatos.findOne({ _id: numero });
     if (!p || p.estado !== 'conversando') return;
     const c = await campanhas.findOne({ _id: p.campanhaId });
-    if (!c || c.modo !== 'automatico' || !['ativa', 'concluida'].includes(c.estado) || !p.autorizado || !p.enviadoEm) return;
+    if (!c || c.modo !== 'automatico' || !permiteDialogo(c, p) || !p.autorizado || !p.enviadoEm) return;
     const conv = await conversas.findOne({ _id: numero });
     if (conv?.pausado) return;
     if (!janelaAberta(recebidoEm, agora())) { await encaminhar(numero, 'Janela de resposta encerrada.'); return; }
@@ -130,7 +131,7 @@ export function criarVendasProspeccao(db, { inferir, enviar, registrarSaida, val
         contatos.findOne({ _id: numero }), campanhas.findOne({ _id: c._id }), conversas.findOne({ _id: numero }),
         db.collection('painel_usuarios').findOne({ _id: c.usuario?.id, ativo: true, papel: 'admin' }),
       ]);
-      if (!admin || !atual?.autorizado || atual.estado !== 'conversando' || !['ativa', 'concluida'].includes(campanha?.estado) || campanha?.modo !== 'automatico' || conversa?.pausado || (conversa?.versaoHumana || 0) !== versao || !janelaAberta(recebidoEm, agora())) throw new Error('Atendimento automático interrompido');
+      if (!admin || !atual?.autorizado || atual.estado !== 'conversando' || !permiteDialogo(campanha, atual) || campanha?.modo !== 'automatico' || conversa?.pausado || (conversa?.versaoHumana || 0) !== versao || !janelaAberta(recebidoEm, agora())) throw new Error('Atendimento automático interrompido');
     };
     let decisao;
     try {

@@ -35,6 +35,7 @@ export function criarProspeccao(db, { transporte, registrarSaida, vendas, agora 
   const exclusivo = fn => { const p = cadeia.then(fn); cadeia = p.catch(() => {}); return p; };
   const auditar = (usuario, acao, alvo, extra = {}) => auditoria.insertOne({ em: agora(), usuario, acao: `prospeccao_${acao}`, alvo, estado: 'concluida', ...extra });
   const diaAtual = () => agora().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
+  const permiteDialogo = (campanha, contato) => ['ativa', 'concluida'].includes(campanha?.estado) || (campanha?.estado === 'pausada' && Boolean(contato?.retomadaIndividualEm));
 
   async function preparar() {
     await promocao.preparar();
@@ -44,6 +45,7 @@ export function criarProspeccao(db, { transporte, registrarSaida, vendas, agora 
     await contatos.updateMany({ estado: 'enviando' }, { $set: { estado: 'revisao', observacao: 'Envio interrompido; confira o histórico. Não será reenviado.' } });
     await campanhas.updateMany({ estado: 'ativa' }, { $set: { estado: 'pausada', observacao: 'Servidor reiniciado. Revise e retome pelo painel.' } });
     await campanhas.updateMany({ estado: 'concluida', modo: 'automatico' }, { $set: { estado: 'pausada', observacao: 'Servidor reiniciado. Retome as conversas comerciais pelo painel.' } });
+    await contatos.updateMany({ retomadaIndividualEm: { $exists: true } }, { $unset: { retomadaIndividualEm: '' } });
     await contatos.updateMany({ envioVendaPendente: true }, { $set: { estado: 'revisao', observacao: 'Resposta comercial interrompida. Confira a conversa antes de retomar.' } });
     await campanhas.updateMany({ estado: 'importando' }, { $set: { estado: 'rascunho', observacao: 'Importação interrompida. Confira os contatos importados.' } });
   }
@@ -90,12 +92,25 @@ export function criarProspeccao(db, { transporte, registrarSaida, vendas, agora 
     const c = await campanhas.findOne({ _id: p.campanhaId });
     const classificacao = classificarResposta(texto);
     const terminais = ['nao_contatar', 'revisao', 'humano', 'provavel_bot', 'pedido_contratacao', 'contratado'];
-    const automatica = c?.modo === 'automatico' && ['ativa', 'concluida'].includes(c.estado) && p.autorizado && p.enviadoEm && !terminais.includes(p.estado);
+    const automatica = c?.modo === 'automatico' && permiteDialogo(c, p) && p.autorizado && p.enviadoEm && !terminais.includes(p.estado);
     const excecao = pedeHumano(texto) || String(texto).startsWith('[Mensagem de mídia');
     const estado = classificacao === 'nao_contatar' ? classificacao : terminais.includes(p.estado) ? p.estado : automatica && !excecao && classificacao !== 'provavel_bot' ? 'conversando' : excecao ? 'humano' : classificacao;
     await contatos.updateOne({ _id: numero }, { $set: { estado, ultimaResposta: String(texto).slice(0, 2000), respostaEm: agora(), ...(estado === 'nao_contatar' ? { autorizado: false } : {}) } });
     if (estado !== 'conversando') await db.collection('conversas').updateOne({ _id: numero }, { $set: { pausado: true, pausaOrigem: 'prospeccao' } }, { upsert: true });
     return true;
+  }
+
+  async function retomarConversa(numero, usuario) {
+    const p = await contatos.findOne({ _id: numero });
+    if (!p) return { prospecto: false };
+    const c = await campanhas.findOne({ _id: p.campanhaId });
+    if (!p.autorizado || !p.enviadoEm || p.envioVendaPendente || ['nao_contatar', 'revisao', 'contratado'].includes(p.estado) || c?.modo !== 'automatico' || !['ativa', 'concluida', 'pausada'].includes(c.estado) || (p.turnosVenda || 0) >= 20) {
+      return { prospecto: true, ok: false, erro: 'Retomada indisponível: confira campanha, autorização, limite e envios pendentes.' };
+    }
+    await contatos.updateOne({ _id: p._id }, { $set: { estado: 'conversando', etapaVenda: p.etapaVenda === 'humano' ? 'retomado' : p.etapaVenda, retomadaIndividualEm: agora(), observacao: 'Retomado pelo administrador. Aguardando nova mensagem do contato.' } });
+    await db.collection('conversas').updateOne({ _id: p._id }, { $set: { pausado: false, pausaOrigem: null, responsavel: null }, $inc: { versaoHumana: 1 } }, { upsert: true });
+    await auditar(usuario, 'retomar_conversa', p._id);
+    return { prospecto: true, ok: true };
   }
 
   function rotas(router, express) {
@@ -214,11 +229,9 @@ export function criarProspeccao(db, { transporte, registrarSaida, vendas, agora 
         await auditar(req.usuario, 'assumir', p._id); return res.json({ ok: true });
       }
       if (req.body?.acao === 'retomar_conversa') {
-        const c = await campanhas.findOne({ _id: p.campanhaId });
-        if (!p.autorizado || !p.enviadoEm || p.envioVendaPendente || ['nao_contatar', 'revisao', 'contratado'].includes(p.estado) || c?.modo !== 'automatico' || !['ativa', 'concluida'].includes(c.estado) || (p.turnosVenda || 0) >= 20) return res.status(400).json({ erro: 'Retomada indisponível: confira campanha, autorização, limite e envios pendentes.' });
-        await contatos.updateOne({ _id: p._id }, { $set: { estado: 'conversando', observacao: 'Retomado pelo administrador. Aguardando nova mensagem do contato.' } });
-        await db.collection('conversas').updateOne({ _id: p._id }, { $set: { pausado: false, pausaOrigem: null }, $inc: { versaoHumana: 1 } }, { upsert: true });
-        await auditar(req.usuario, 'retomar_conversa', p._id); return res.json({ ok: true });
+        const retomada = await retomarConversa(p._id, req.usuario);
+        if (!retomada.ok) return res.status(400).json({ erro: retomada.erro });
+        return res.json({ ok: true });
       }
       const evidencia = String(req.body?.evidencia || '').trim();
       if (p.tentativaEm || p.estado === 'nao_contatar' || req.body?.acao !== 'aprovar' || evidencia.length < 10 || evidencia.length > 500) return res.status(400).json({ erro: 'Informe como e quando o destinatário autorizou o contato. Contatos bloqueados ou já tentados não podem ser reenviados.' });
@@ -245,11 +258,12 @@ export function criarProspeccao(db, { transporte, registrarSaida, vendas, agora 
     })));
     router.post('/campanhas/:id/pausar', rota(async (req, res) => exclusivo(async () => {
       await campanhas.updateOne({ _id: req.params.id, estado: { $in: ['ativa', 'concluida'] } }, { $set: { estado: 'pausada' } });
+      await contatos.updateMany({ campanhaId: req.params.id }, { $unset: { retomadaIndividualEm: '' } });
       await auditar(req.usuario, 'pausar', req.params.id); res.json({ ok: true });
     })));
     router.use((err, _req, res, _next) => res.status(err.type === 'entity.too.large' ? 413 : 500).json({ erro: err.type === 'entity.too.large' ? 'O arquivo deve ter até 2 MB.' : 'Não foi possível concluir a operação de prospecção.' }));
   }
-  return { preparar, rotas, receber, executar, responder: (numero, recebidoEm) => vendas?.responder(numero, recebidoEm),
+  return { preparar, rotas, receber, retomarConversa, executar, responder: (numero, recebidoEm) => vendas?.responder(numero, recebidoEm),
     iniciar() { parado = false; timer = setInterval(() => executar().catch(() => console.error('[PROSPECÇÃO] Falha na fila.')), 5000); timer.unref(); },
     async parar() { parado = true; clearInterval(timer); await cadeia; },
   };

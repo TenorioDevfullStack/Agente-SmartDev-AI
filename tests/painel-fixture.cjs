@@ -16,6 +16,10 @@ http.createServer(async (req, res) => {
   const json = data => res.end(JSON.stringify(data));
   if (req.url === '/api/auth/me' || req.url === '/api/auth/login') return json({ usuario: { id: 'fixture', nome: 'Atendente de teste', papel: 'atendente', trocarSenha: false } });
   if (req.url === '/api/auth/logout') return json({ ok: true });
+  if (req.url === '/painel/prospeccao-crm.js' || req.url === '/painel/prospeccao.js') {
+    res.setHeader('Content-Type', 'text/javascript; charset=utf-8');
+    return res.end(fs.readFileSync(path.join(__dirname, '../agente', req.url), 'utf8'));
+  }
   if (req.url === '/painel/') {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     return res.end(fs.readFileSync(path.join(__dirname, '../agente/painel/index.html'), 'utf8'));

@@ -402,6 +402,7 @@
   }
   .alerta-global { flex: none; padding: .65rem 1.25rem; background: var(--alerta-soft); color: var(--alerta); display: flex; align-items: center; gap: .75rem; justify-content: space-between; font-size: .82rem; border-bottom: 1px solid var(--line); }
   .alerta-global[hidden] { display: none; }
+  .alerta-acoes { display: flex; align-items: center; gap: .5rem; }
   .alerta-cartao { border-left: 4px solid var(--alerta); }
   .alerta-cartao p { margin-top: .5rem; color: var(--muted); }
   .alerta-cartao.atencao { border-left-color: var(--glow); }
@@ -465,7 +466,7 @@
   </div>
 </header>
 
-<div id="alerta-global" class="alerta-global" role="status" hidden><span id="alerta-resumo"></span><button class="btn" id="ver-alertas">Ver alertas</button></div>
+<div id="alerta-global" class="alerta-global" role="status" hidden><span id="alerta-resumo"></span><div class="alerta-acoes"><button class="btn" id="ver-alertas">Ver alertas</button><button class="btn icone" id="fechar-alertas" title="Dispensar este aviso" aria-label="Dispensar este aviso">×</button></div></div>
 <main>
   <!-- ---------- Conversas ---------- -->
   <section class="vista conversas" data-vista="conversas" data-ativa="true">
@@ -771,6 +772,11 @@
     catch (err) { mostrarErro(err.message); }
   });
   el("ver-alertas").addEventListener("click", () => document.querySelector('#abas button[data-aba="status"]').click());
+  el("fechar-alertas").addEventListener("click", () => {
+    const assinatura = (S.status?.alertas || []).map(a => `${a.tipo}:${a.titulo}`).join('|');
+    if (assinatura) localStorage.setItem('smartdev-alertas-dispensados', assinatura);
+    el("alerta-global").hidden = true;
+  });
 
   // ---------- Tema ----------
   const temaGuardado = ler(CHAVE_TEMA);
@@ -1296,7 +1302,9 @@
     const whats = el("pill-whats");
     const llm = el("pill-llm");
     const alertas = s?.alertas || [];
-    el("alerta-global").hidden = !alertas.length;
+    const assinatura = alertas.map(a => `${a.tipo}:${a.titulo}`).join('|');
+    const dispensados = localStorage.getItem('smartdev-alertas-dispensados') || '';
+    el("alerta-global").hidden = !alertas.length || assinatura === dispensados;
     el("alerta-resumo").textContent = alertas.length ? `${alertas[0].titulo}${alertas.length > 1 ? ` · mais ${alertas.length - 1} alerta(s)` : ""}` : "";
 
     if (!s) {
