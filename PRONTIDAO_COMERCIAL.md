@@ -9,8 +9,8 @@
 - [x] Conversa comercial contextual com oferta e preços controlados.
 - [x] Encaminhamento de interesse concreto ao responsável humano.
 - [x] Testes automatizados com MongoDB, IA e WhatsApp simulados.
-- [ ] Versão mais recente implantada na VPS.
-- [ ] Verificação de infraestrutura sem falhas.
+- [x] Versão mais recente implantada na VPS (22/09/2026, commit 20e6b72).
+- [x] Verificação de infraestrutura sem falhas em 22/09/2026: sete serviços em execução, painel local, WhatsApp autenticado, timers ativos, backup externo verificado há 16h e disco em 8%.
 - [ ] Fluxo real completo com contato autorizado: apresentação, resposta, IA, encaminhamento, atendimento humano e retomada.
 - [ ] Backup automático recente comprovado e restauração periódica registrada.
 
