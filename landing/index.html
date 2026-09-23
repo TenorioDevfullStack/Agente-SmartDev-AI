@@ -17,8 +17,10 @@
   <link rel="canonical" href="https://agente.smartdevai.com.br/">
   <link rel="stylesheet" href="/experience.css?v=6">
   <link rel="stylesheet" href="/rebrand.css?v=3">
+  <link rel="stylesheet" href="/growth.css?v=1">
   <script src="/site-config.js" defer></script>
   <script src="/script.js?v=6" defer></script>
+  <script src="/growth.js?v=1" defer></script>
 </head>
 <body>
   <svg class="icon-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
@@ -86,6 +88,86 @@
       </div>
     </section>
     <div class="benefit-strip"><div class="container strip-inner"><p>MENOS TAREFAS REPETIDAS.<br><strong>MAIS CONEXÕES DE VERDADE.</strong></p><span><svg class="icon"><use href="#i-clock"/></svg> Atendimento além do horário</span><span><svg class="icon"><use href="#i-spark"/></svg> Conversas com contexto</span><span><svg class="icon"><use href="#i-human"/></svg> Sua equipe no controle</span></div></div>
+    <section id="fluxo" class="growth-story">
+      <div class="container">
+        <div class="growth-heading"><div><p class="eyebrow">DA MENSAGEM AO PRÓXIMO PASSO</p><h2>Veja o agente trabalhar.<br><span>E saiba quando entrar.</span></h2></div><p>Uma demonstração visual do caminho que a SmartDev AI pode preparar para sua empresa.</p></div>
+        <div class="story-layout" data-story>
+          <ol class="story-steps" aria-label="Etapas da demonstração">
+            <li class="is-active"><button type="button" data-story-step="0"><span>01</span><strong>Cliente chama</strong><small>A conversa começa no WhatsApp.</small></button></li>
+            <li><button type="button" data-story-step="1"><span>02</span><strong>Agente entende</strong><small>A necessidade é identificada.</small></button></li>
+            <li><button type="button" data-story-step="2"><span>03</span><strong>Contexto é reunido</strong><small>As informações úteis ficam organizadas.</small></button></li>
+            <li><button type="button" data-story-step="3"><span>04</span><strong>Humano é acionado</strong><small>Sua equipe recebe o motivo e o histórico.</small></button></li>
+          </ol>
+          <div class="story-screen" aria-live="polite">
+            <div class="story-screen-head"><span><i></i> Agente em atendimento</span><b id="story-counter">01 / 04</b></div>
+            <div class="story-conversation">
+              <div class="story-bubble is-client" data-story-item="0">Olá! Queria saber se vocês atendem empresas como a minha.</div>
+              <div class="story-bubble is-agent" data-story-item="1">Atendemos projetos de agentes de IA para organizar conversas no WhatsApp. Qual é o maior desafio da sua equipe hoje?</div>
+              <div class="story-insight" data-story-item="2"><span>CONTEXTO IDENTIFICADO</span><strong>Muitas dúvidas repetidas · atendimento manual · interesse para o próximo mês</strong></div>
+              <div class="story-handoff" data-story-item="3"><svg class="icon"><use href="#i-human"/></svg><div><span>PRONTO PARA SUA EQUIPE</span><strong>Novo interesse qualificado</strong><small>Histórico e necessidade disponíveis no painel.</small></div></div>
+            </div>
+            <div class="story-progress"><span id="story-progress"></span></div>
+          </div>
+        </div>
+        <p class="growth-disclaimer">Fluxo ilustrativo. As perguntas, regras e encaminhamentos são definidos para cada negócio.</p>
+      </div>
+    </section>
+
+    <section id="segmentos" class="segment-section container">
+      <div class="growth-heading"><div><p class="eyebrow">UM AGENTE, DIFERENTES ROTINAS</p><h2>Começa pelo seu negócio.<br><span>Não por um roteiro genérico.</span></h2></div><p>Explore exemplos de como a conversa pode ser adaptada a diferentes segmentos.</p></div>
+      <div class="segment-shell">
+        <div class="segment-tabs" role="tablist" aria-label="Segmentos">
+          <button type="button" role="tab" aria-selected="true" data-segment="clinicas">Clínicas</button>
+          <button type="button" role="tab" aria-selected="false" data-segment="servicos">Serviços</button>
+          <button type="button" role="tab" aria-selected="false" data-segment="imobiliarias">Imobiliárias</button>
+          <button type="button" role="tab" aria-selected="false" data-segment="academias">Academias e escolas</button>
+        </div>
+        <div class="segment-panel" role="tabpanel">
+          <div><span class="segment-index" id="segment-index">01</span><p class="segment-label">DESAFIO FREQUENTE</p><h3 id="segment-title">Recepção ocupada com as mesmas dúvidas.</h3><p id="segment-copy">O agente responde informações aprovadas e reúne o contexto para a equipe continuar quando necessário.</p><div class="segment-benefit"><svg class="icon"><use href="#i-check"/></svg><span id="segment-benefit">Mais atenção para quem precisa de atendimento humano.</span></div></div>
+          <div class="segment-chat"><span>EXEMPLO ILUSTRATIVO</span><p id="segment-question">“Vocês atendem meu convênio e qual é o horário?”</p><div><svg class="icon"><use href="#i-spark"/></svg><p id="segment-answer">O agente consulta as informações aprovadas da clínica, responde o que estiver previsto e encaminha o restante.</p></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="calculadora" class="calculator-section">
+      <div class="container calculator-layout">
+        <div class="calculator-copy"><p class="eyebrow">CALCULADORA DE CAPACIDADE</p><h2>Quanto tempo as perguntas repetidas consomem?</h2><p>Use os dados da sua operação para criar uma estimativa inicial. O resultado ajuda na conversa de diagnóstico e não representa garantia de economia.</p>
+          <form id="roi-form" class="roi-form">
+            <label>Mensagens por dia<input id="roi-messages" type="number" min="1" max="10000" value="50"></label>
+            <label>Minutos por atendimento<input id="roi-minutes" type="number" min="1" max="120" value="4"></label>
+            <label>Perguntas repetitivas<input id="roi-repeat" type="range" min="0" max="100" value="60"><output id="roi-repeat-output">60%</output></label>
+            <label>Dias de atendimento por mês<input id="roi-days" type="number" min="1" max="31" value="22"></label>
+            <label>Custo mensal da operação (R$)<input id="roi-cost" type="number" min="0" max="1000000" step="100" value="3500"></label>
+          </form>
+        </div>
+        <div class="roi-result" aria-live="polite">
+          <span class="roi-kicker">ESTIMATIVA MENSAL</span>
+          <div class="roi-main"><strong id="roi-hours">44h</strong><span>potencialmente dedicadas a perguntas repetitivas</span></div>
+          <div class="roi-grid"><div><strong id="roi-conversations">660</strong><span>interações repetitivas estimadas</span></div><div><strong id="roi-value">R$ 875</strong><span>parcela proporcional do custo informado</span></div></div>
+          <p>A automação real depende do conteúdo aprovado, do comportamento dos clientes, do escopo e das integrações disponíveis.</p>
+          <a class="button button-primary" data-whatsapp-link href="#contato">Quero avaliar meu cenário <svg class="icon"><use href="#i-arrow"/></svg></a>
+        </div>
+      </div>
+    </section>
+
+    <section id="comparacao" class="comparison-section container">
+      <div class="growth-heading"><div><p class="eyebrow">ANTES E DEPOIS</p><h2>Menos improviso.<br><span>Mais continuidade.</span></h2></div><p>Uma visão direta do que muda quando as conversas recorrentes passam a ter processo e acompanhamento.</p></div>
+      <div class="comparison-table">
+        <div class="comparison-head"><span>ATENDIMENTO SEM AGENTE</span><span>COM SMARTDEV AI</span></div>
+        <div class="comparison-row"><p>Respostas dependem da disponibilidade imediata da equipe.</p><p><svg class="icon"><use href="#i-check"/></svg>Dúvidas previstas podem receber orientação automaticamente.</p></div>
+        <div class="comparison-row"><p>Informações ficam espalhadas nas conversas.</p><p><svg class="icon"><use href="#i-check"/></svg>Histórico e contexto ficam reunidos no painel.</p></div>
+        <div class="comparison-row"><p>Interessados podem esperar sem acompanhamento.</p><p><svg class="icon"><use href="#i-check"/></svg>Interesses podem ser identificados e encaminhados.</p></div>
+        <div class="comparison-row"><p>A equipe repete respostas ao longo do dia.</p><p><svg class="icon"><use href="#i-check"/></svg>A base aprovada apoia conversas recorrentes.</p></div>
+      </div>
+    </section>
+
+    <section id="resultados" class="evidence-section container">
+      <div class="evidence-card">
+        <div><p class="eyebrow">RESULTADOS COM EVIDÊNCIA</p><h2>Casos reais entram aqui.<br><span>Depois de medidos e autorizados.</span></h2><p>Nos primeiros projetos, acompanharemos indicadores claros para transformar operação em aprendizado e prova comercial.</p></div>
+        <div class="evidence-metrics"><span>Tempo até a primeira resposta</span><span>Conversas encaminhadas</span><span>Contatos qualificados</span><span>Perguntas recorrentes atendidas</span></div>
+      </div>
+      <div id="authorized-cases" class="authorized-cases" hidden aria-label="Casos autorizados"></div>
+    </section>
     <section id="solucoes" class="section container">
       <div class="section-heading"><div><p class="eyebrow">FEITO PARA O SEU DIA A DIA</p><h2>Sua equipe ganha tempo.<br>Seu cliente ganha atenção.</h2></div><p>Da primeira mensagem ao próximo passo, um agente preparado para a realidade do seu negócio.</p></div>
       <div class="solution-grid">

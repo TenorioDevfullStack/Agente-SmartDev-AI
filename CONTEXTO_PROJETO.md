@@ -166,3 +166,11 @@ Inspeção de código e documentação; não representa verificação da operaç
 - Implementação: símbolo vetorial com duas conversas formando a letra S e brilho central representando a inteligência; versões colorida, para fundo escuro, para fundo claro e monocromática.
 - Aplicação: nova assinatura inserida no cabeçalho, rodapé e favicon da landing.
 - Validação local: arquivos SVG carregados corretamente e página sem rolagem horizontal.
+
+## Evolução comercial inspirada em referências de mercado (2026-09-23)
+- Decisão do usuário: implementar os seis pontos priorizados após análise da Octadesk.
+- Landing implementada: demonstração animada da jornada completa; exemplos interativos para clínicas, serviços, imobiliárias, academias e escolas; calculadora estimativa de capacidade; comparação antes/depois; área de evidências e mecanismo para publicar somente casos autorizados.
+- A calculadora informa explicitamente que os resultados são estimativas e não garantias. Nenhum cliente, resultado, integração ou depoimento foi inventado.
+- Painel implementado: visão operacional com conversas aguardando, contatos ativos em 24h, respostas do agente, atendimentos humanos, leads em 30 dias e respostas sobre envios de campanha, além da saúde técnica já existente.
+- Validação local: 22 testes de regressão aprovados, server.ts compilado com esbuild, interações da landing verificadas em 1440px e 390px sem rolagem horizontal e sem erros no navegador.
+- Publicação: a landing entra pelo Cloudflare após push. Os novos indicadores do painel exigem atualizar e reconstruir o container agente na VPS.

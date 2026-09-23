@@ -1307,6 +1307,17 @@ api.get(
       db.collection("fila_mensagens").countDocuments({ estado: "revisao" }),
     ]);
 
+    const inicio24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const inicio30d = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const [mensagensRecebidas24h, mensagensAgente24h, atendimentosHumanos, leads30d, campanhasEnviadas, campanhasRespondidas, contatosAtivos] = await Promise.all([
+      db.collection("mensagens").countDocuments({ role: "user", em: { $gte: inicio24h } }),
+      db.collection("mensagens").countDocuments({ role: "assistant", via: "agente", em: { $gte: inicio24h } }),
+      db.collection("conversas").countDocuments({ pausado: true }),
+      db.collection("leads").countDocuments({ criadoEm: { $gte: inicio30d } }),
+      db.collection("prospeccao_contatos").countDocuments({ enviadoEm: { $exists: true } }),
+      db.collection("prospeccao_contatos").countDocuments({ ultimaResposta: { $exists: true, $ne: "" } }),
+      db.collection("mensagens").distinct("numero", { em: { $gte: inicio24h } }),
+    ]);
     res.json({
       alertas: montarAlertas({ whatsapp, falhasIA, aguardando, revisao }),
       aguardando,
@@ -1330,6 +1341,16 @@ api.get(
         contatoPessoalConfigurado: Boolean(CONTATO_PESSOAL),
       },
       totais: { conversas, leads, agendamentos, recados },
+      operacao: {
+        aguardandoResposta: aguardando.length,
+        contatosAtivos24h: contatosAtivos.length,
+        mensagensRecebidas24h,
+        mensagensAgente24h,
+        atendimentosHumanos,
+        leads30d,
+        campanhasEnviadas,
+        campanhasRespondidas,
+      },
       ultimaMensagemEm: ultima[0]?.em || null,
       uptimeSegundos: Math.round(process.uptime()),
       agora: new Date(),

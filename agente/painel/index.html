@@ -314,6 +314,11 @@
   .metrica { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: .75rem .875rem; }
   .metrica .valor { font-family: var(--f-display); font-size: 1.75rem; font-weight: 700; letter-spacing: -.02em; }
   .metrica .rotulo { font-family: var(--f-mono); font-size: .625rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .metrica.destaque { min-height: 8.25rem; padding: 1rem; background: linear-gradient(145deg, var(--surface), color-mix(in srgb, var(--surface) 82%, #7c62ff)); }
+  .metrica.destaque .valor { font-size: 2.25rem; color: var(--ink); }
+  .metrica .valor small { font-size:1rem; color:var(--muted); }
+  .metrica .ajuda { display:block; margin-top:.5rem; color:var(--muted); font-size:.72rem; line-height:1.4; }
+  .status-subtitulo { margin:1.5rem 0 .625rem; color:var(--muted); font-size:.75rem; letter-spacing:.08em; text-transform:uppercase; }
 
   /* ---------- Entrada de senha ---------- */
   .portao {
@@ -1246,18 +1251,25 @@
         ${(s.aguardando || []).map(c => `<div class="cartao"><div class="cartao-topo"><h3>${esc(c.nome || c.numero)}</h3><span class="quando">Há ${Math.max(5, Math.floor((Date.now() - new Date(c.desde).getTime()) / 60000))} min</span></div><p>${c.pausado ? "Atendimento assumido por uma pessoa" : "Atendimento com o agente"}</p><div class="cartao-acoes"><button class="btn ir-conversa" data-numero="${esc(c.numero)}">Abrir conversa</button></div></div>`).join("")}
       </div>
       <div>
-        <div class="secao-titulo"><h2>Como está a agente</h2></div>
+        <div class="secao-titulo"><h2>Visão da operação</h2></div>
+        <div class="grade-status">
+          <div class="metrica destaque"><div class="valor">${s.operacao?.aguardandoResposta || 0}</div><div class="rotulo">aguardando resposta</div><span class="ajuda">Conversas que precisam de atenção agora.</span></div>
+          <div class="metrica destaque"><div class="valor">${s.operacao?.contatosAtivos24h || 0}</div><div class="rotulo">contatos nas últimas 24h</div><span class="ajuda">Pessoas com atividade recente no atendimento.</span></div>
+          <div class="metrica destaque"><div class="valor">${s.operacao?.mensagensAgente24h || 0}</div><div class="rotulo">respostas do agente</div><span class="ajuda">Mensagens automáticas enviadas nas últimas 24h.</span></div>
+          <div class="metrica destaque"><div class="valor">${s.operacao?.atendimentosHumanos || 0}</div><div class="rotulo">com atendimento humano</div><span class="ajuda">Conversas atualmente assumidas por uma pessoa.</span></div>
+          <div class="metrica destaque"><div class="valor">${s.operacao?.leads30d || 0}</div><div class="rotulo">leads em 30 dias</div><span class="ajuda">Novos interesses registrados no período.</span></div>
+          <div class="metrica destaque"><div class="valor">${s.operacao?.campanhasRespondidas || 0}<small> / ${s.operacao?.campanhasEnviadas || 0}</small></div><div class="rotulo">respostas de campanhas</div><span class="ajuda">Responderam entre os contatos já abordados.</span></div>
+        </div>
+        <p class="status-subtitulo">Saúde técnica</p>
         <div class="grade-status">
           <div class="metrica"><div class="valor">${s.fila?.pendentes || 0}</div><div class="rotulo">mensagens na fila</div></div>
           <div class="metrica"><div class="valor">${s.fila?.processando || 0}</div><div class="rotulo">em processamento</div></div>
           <div class="metrica"><div class="valor">${s.fila?.revisao || 0}</div><div class="rotulo">precisam de revisão</div></div>
-          <div class="metrica"><div class="valor">${t.conversas}</div><div class="rotulo">conversas</div></div>
-          <div class="metrica"><div class="valor">${t.leads}</div><div class="rotulo">leads</div></div>
+          <div class="metrica"><div class="valor">${t.conversas}</div><div class="rotulo">conversas totais</div></div>
           <div class="metrica"><div class="valor">${t.agendamentos}</div><div class="rotulo">agendamentos</div></div>
           <div class="metrica"><div class="valor">${t.recados}</div><div class="rotulo">recados</div></div>
         </div>
       </div>
-
       <div class="cartao">
         <dl>
           <dt>WhatsApp</dt>
