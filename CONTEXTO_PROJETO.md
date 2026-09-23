@@ -160,3 +160,9 @@ Inspeção de código e documentação; não representa verificação da operaç
 - Decisão do usuário: tornar a experiência visual mais impactante com imagens, preservando a landing existente.
 - Implementação: arte 3D original em azul-marinho, violeta e ciano integrada ao hero, com mensagens sobrepostas, profundidade, movimento sutil e adaptação para celular.
 - Validação local: imagem carregada em 1448 px, hero responsivo sem rolagem horizontal em 1440 px e 390 px, sem erros reportados pelo navegador.
+
+## Identidade visual SmartDev AI (2026-09-23)
+- Pedido do usuário: criar uma logo própria para a SmartDev AI.
+- Implementação: símbolo vetorial com duas conversas formando a letra S e brilho central representando a inteligência; versões colorida, para fundo escuro, para fundo claro e monocromática.
+- Aplicação: nova assinatura inserida no cabeçalho, rodapé e favicon da landing.
+- Validação local: arquivos SVG carregados corretamente e página sem rolagem horizontal.
