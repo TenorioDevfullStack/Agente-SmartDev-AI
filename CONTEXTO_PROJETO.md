@@ -155,3 +155,8 @@ Inspeção de código e documentação; não representa verificação da operaç
 - Em 23/09/2026, a tela do Cloudflare confirmou que `agente-smartdevai.com.br` é servido pelo Worker estático `agente-smartdev-ai`, conectado ao GitHub e implantado por `npx wrangler deploy`. As versões novas recebiam 100% do tráfego, mas reutilizavam os ativos antigos porque o repositório não possuía configuração Wrangler. Adicionado `wrangler.jsonc` na raiz com `assets.directory` apontando explicitamente para `./landing`, conforme a documentação atual do Cloudflare Workers Static Assets. Validação do novo deploy público ainda pendente.
 
 - Em 23/09/2026, após o usuário considerar a primeira revisão visual sutil demais, aplicada uma segunda direção visual claramente distinta à mesma landing: paleta azul profundo, violeta e ciano; hero, demonstração, cards, prévia do produto, oferta, processo, contato e favicon foram reestilizados. A estrutura e o conteúdo comercial verificados foram preservados. Navegador automatizado aprovou desktop e celular 390x844 sem overflow horizontal, com menu e demonstração funcionando e sem erros registrados. Evidências em `tests/landing-v7-*.png`. Publicação pública depende do deploy automático do commit correspondente.
+
+## Landing com arte imersiva (2026-09-23)
+- Decisão do usuário: tornar a experiência visual mais impactante com imagens, preservando a landing existente.
+- Implementação: arte 3D original em azul-marinho, violeta e ciano integrada ao hero, com mensagens sobrepostas, profundidade, movimento sutil e adaptação para celular.
+- Validação local: imagem carregada em 1448 px, hero responsivo sem rolagem horizontal em 1440 px e 390 px, sem erros reportados pelo navegador.
