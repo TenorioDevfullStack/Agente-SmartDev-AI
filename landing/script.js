@@ -1,0 +1,192 @@
+(() => {
+  'use strict';
+  const motionPreference = matchMedia('(prefers-reduced-motion: reduce)');
+  const menuToggle = document.querySelector('.menu-toggle');
+  const mobileNav = document.getElementById('mobile-nav');
+  function closeMenu() {
+    mobileNav.hidden = true;
+    menuToggle.setAttribute('aria-expanded', 'false');
+    menuToggle.setAttribute('aria-label', 'Abrir menu');
+  }
+  menuToggle.addEventListener('click', () => {
+    const opening = mobileNav.hidden;
+    mobileNav.hidden = !opening;
+    menuToggle.setAttribute('aria-expanded', String(opening));
+    menuToggle.setAttribute('aria-label', opening ? 'Fechar menu' : 'Abrir menu');
+  });
+  mobileNav.addEventListener('click', (event) => { if (event.target.closest('a')) closeMenu(); });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !mobileNav.hidden) { closeMenu(); menuToggle.focus(); }
+  });
+  const messages = document.getElementById('chat-messages');
+  const choices = document.getElementById('chat-choices');
+  const hint = document.getElementById('demo-hint');
+  const initialMessages = messages.innerHTML;
+  const initialChoices = choices.innerHTML;
+  const contextDetail = document.getElementById('context-detail');
+  const contextNodes = document.querySelectorAll('.context-node');
+  function updateContext(step, text) {
+    contextNodes.forEach((node, index) => node.classList.toggle('is-current', index === step));
+    if (contextDetail) contextDetail.textContent = text;
+  }
+  const flows = {
+    atendimento: {
+      label: 'Quero melhorar meu atendimento.',
+      reply: 'Entendi! Um agente pode responder dúvidas frequentes e orientar seus clientes, mesmo fora do horário da equipe. Qual é o seu maior desafio?',
+      options: [['horario', 'Mensagens fora do horário'], ['repeticao', 'Muitas perguntas repetidas']]
+    },
+    vendas: {
+      label: 'Quero apoiar minhas vendas.',
+      reply: 'Vamos começar entendendo o interesse de cada contato. Assim, sua equipe recebe o contexto da conversa e pode conduzir a proposta. O que você vende?',
+      options: [['servicos', 'Serviços'], ['produtos', 'Produtos']]
+    },
+    horario: {
+      label: 'Recebo mensagens fora do horário.',
+      reply: 'Nesse caso, podemos preparar um fluxo para acolher o cliente, responder às dúvidas previstas e reunir informações para sua equipe continuar depois.',
+      options: [['projeto', 'Como seria no meu negócio?']]
+    },
+    repeticao: {
+      label: 'Recebo muitas perguntas repetidas.',
+      reply: 'O agente pode consultar as informações aprovadas sobre seu negócio. Quando uma dúvida fugir dessas orientações, o fluxo pode encaminhar para sua equipe.',
+      options: [['projeto', 'Como seria no meu negócio?']]
+    },
+    servicos: {
+      label: 'Minha empresa oferece serviços.',
+      reply: 'Podemos criar perguntas para entender a necessidade, o prazo e o tipo de serviço buscado. A equipe entra na conversa com essas informações em mãos.',
+      options: [['projeto', 'Como seria no meu negócio?']]
+    },
+    produtos: {
+      label: 'Minha empresa vende produtos.',
+      reply: 'O agente pode orientar sobre os produtos incluídos na sua base de informações e identificar o interesse do cliente. Consultas de estoque dependem das integrações do projeto.',
+      options: [['projeto', 'Como seria no meu negócio?']]
+    }
+  };
+  function bubble(text, sender) {
+    const element = document.createElement('div');
+    element.className = 'bubble bubble-' + sender + ' bubble-new';
+    element.textContent = text;
+    const meta = document.createElement('span');
+    meta.className = 'message-meta';
+    meta.textContent = '14:33';
+    element.append(meta);
+    messages.append(element);
+  }
+  choices.addEventListener('click', (event) => {
+    const button = event.target.closest('button[data-demo]');
+    if (!button) return;
+    const key = button.dataset.demo;
+    if (key === 'projeto') {
+      document.getElementById('contato').scrollIntoView({ behavior: motionPreference.matches ? 'instant' : 'smooth' });
+      const contactHeading = document.querySelector('#contato h2');
+      contactHeading.setAttribute('tabindex', '-1');
+      contactHeading.focus({ preventScroll: true });
+      return;
+    }
+    const flow = flows[key];
+    if (!flow) return;
+    bubble(flow.label, 'user');
+    bubble(flow.reply, 'agent');
+    const isFirstChoice = key === 'atendimento' || key === 'vendas';
+    updateContext(isFirstChoice ? 1 : 2, isFirstChoice
+      ? 'O interesse foi identificado. Agora, o exemplo explora o que sua empresa precisa.'
+      : 'Com mais contexto, o exemplo apresenta um caminho para o seu atendimento.');
+    choices.replaceChildren();
+    flow.options.forEach(([value, label]) => {
+      const choice = document.createElement('button');
+      choice.type = 'button';
+      choice.dataset.demo = value;
+      choice.textContent = label;
+      choices.append(choice);
+    });
+    messages.scrollTop = messages.scrollHeight;
+    hint.textContent = 'Exemplo de fluxo · sem envio de mensagens';
+    choices.querySelector('button')?.focus({ preventScroll: true });
+  });
+  document.getElementById('reset-demo').addEventListener('click', () => {
+    messages.innerHTML = initialMessages;
+    choices.innerHTML = initialChoices;
+    messages.scrollTop = 0;
+    hint.textContent = 'Escolha uma opção para explorar';
+    updateContext(0, 'Escolha atendimento ou vendas para explorar um exemplo.');
+    choices.querySelector('button')?.focus({ preventScroll: true });
+  });
+  const config = window.SMARTDEV_CONFIG || {};
+  const phone = String(config.whatsappNumber || '').replace(/\D/g, '');
+  if (/^\d{10,15}$/.test(phone)) {
+    const contact = document.getElementById('whatsapp-contact');
+    const whatsappUrl = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(config.whatsappMessage || 'Olá! Quero conhecer os agentes de IA da SmartDev AI.');
+    document.querySelectorAll('[data-whatsapp-link]').forEach((link) => {
+      link.href = whatsappUrl;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+    });
+    contact.removeAttribute('aria-disabled');
+    contact.removeAttribute('tabindex');
+    contact.querySelector('span').textContent = 'Conversar no WhatsApp';
+    document.getElementById('contact-note').textContent = 'Uma conversa para entender seu negócio. Sem compromisso.';
+  }
+  document.getElementById('year').textContent = String(new Date().getFullYear());
+
+  // Progressive enhancement: content is visible even when motion is unavailable.
+  if (!motionPreference.matches && 'IntersectionObserver' in window && 'animate' in Element.prototype) {
+    const activeAnimations = new Set();
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.filter((entry) => entry.isIntersecting).forEach((entry, index) => {
+        revealObserver.unobserve(entry.target);
+        if (motionPreference.matches || entry.target.contains(document.activeElement)) return;
+        const animation = entry.target.animate(
+          [{ opacity: .55, transform: 'translateY(16px)' }, { opacity: 1, transform: 'translateY(0)' }],
+          { duration: 620, delay: Math.min(index, 3) * 60, easing: 'cubic-bezier(.2,.7,.25,1)' }
+        );
+        activeAnimations.add(animation);
+        const cleanUp = () => activeAnimations.delete(animation);
+        animation.onfinish = cleanUp;
+        animation.oncancel = cleanUp;
+      });
+    }, { threshold: .1 });
+
+    document.querySelectorAll(
+      '.hero-copy > *, .intelligence-scene, .hero-baseline, .demo-intro, .demo-stage, .strip-inner > *, .section-heading, .solution-card, .product-copy > *, .product-window, .process-intro, .steps li, .offer-heading, .offer-card, .offer-aside, .faq-layout > div:first-child, .faq-list, .contact-panel, .signature'
+    ).forEach((element) => revealObserver.observe(element));
+
+    motionPreference.addEventListener('change', (event) => {
+      if (!event.matches) return;
+      revealObserver.disconnect();
+      activeAnimations.forEach((animation) => animation.cancel());
+      activeAnimations.clear();
+    });
+  }
+
+  // Card highlights respond only to deliberate pointer movement.
+  const finePointer = matchMedia('(hover: hover) and (pointer: fine)');
+  document.querySelectorAll('.solution-card').forEach((card) => {
+    card.addEventListener('pointermove', (event) => {
+      if (motionPreference.matches || !finePointer.matches) return;
+      const bounds = card.getBoundingClientRect();
+      card.style.setProperty('--light-x', (event.clientX - bounds.left) / bounds.width * 100 + '%');
+      card.style.setProperty('--light-y', (event.clientY - bounds.top) / bounds.height * 100 + '%');
+    });
+    card.addEventListener('pointerleave', () => {
+      card.style.removeProperty('--light-x');
+      card.style.removeProperty('--light-y');
+    });
+  });
+  // Keep the page calm: one FAQ at a time and a mobile CTA that yields to the contact section.
+  document.querySelectorAll('.faq-list details').forEach((item) => {
+    item.addEventListener('toggle', () => {
+      if (!item.open) return;
+      document.querySelectorAll('.faq-list details[open]').forEach((other) => {
+        if (other !== item) other.open = false;
+      });
+    });
+  });
+  const mobileConversion = document.querySelector('.mobile-conversion');
+  const contactSection = document.getElementById('contato');
+  if (mobileConversion && contactSection && 'IntersectionObserver' in window) {
+    new IntersectionObserver(([entry]) => mobileConversion.classList.toggle('is-hidden', entry.isIntersecting), { threshold: .15 }).observe(contactSection);
+  }
+  const header = document.querySelector('.header');
+  const updateHeader = () => header.classList.toggle('is-scrolled', scrollY > 12);
+  addEventListener('scroll', updateHeader, { passive: true });
+  updateHeader();
+})();
