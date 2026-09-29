@@ -5,13 +5,12 @@
 ## Marco 1 — agente comercial da SmartDev AI
 
 - [x] Painel com atendimento humano, retomada, alertas e auditoria.
-- [x] Prospecção com autorização, horários, fila, revisão de envio e histórico por prospecto.
-- [x] Conversa comercial contextual com oferta e preços controlados.
-- [x] Encaminhamento de interesse concreto ao responsável humano.
+- [x] Atendimento com IA, histórico, catálogo, qualificação e registro de leads.
+- [x] Pedidos de agendamento, recados e encaminhamento ao responsável humano.
 - [x] Testes automatizados com MongoDB, IA e WhatsApp simulados.
-- [x] Versão mais recente implantada na VPS (22/09/2026, commit 20e6b72).
+- [ ] Versão sem prospecção implantada na VPS.
 - [x] Verificação de infraestrutura sem falhas em 22/09/2026: sete serviços em execução, painel local, WhatsApp autenticado, timers ativos, backup externo verificado há 16h e disco em 8%.
-- [ ] Fluxo real completo com contato autorizado: apresentação, resposta, IA, encaminhamento, atendimento humano e retomada.
+- [ ] Fluxo real completo de atendimento recebido: resposta da IA, lead ou encaminhamento, atendimento humano e retomada.
 - [ ] Backup automático recente comprovado e restauração periódica registrada.
 
 Depois da atualização, execute na VPS:

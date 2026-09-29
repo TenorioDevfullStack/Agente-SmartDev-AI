@@ -140,7 +140,7 @@ export async function criarAutenticacao(db, Router, senhaInicial) {
     if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
     const id = randomUUID();
     const numero = req.path.match(/^\/conversas\/(\d+)/)?.[1] || null;
-    const acao = req.path.startsWith('/prospeccao') ? 'gerenciar_prospeccao' : req.path.endsWith('/mensagem') ? 'responder' : req.path.endsWith('/pausa') ? (req.body?.pausado ? 'assumir' : 'devolver') : req.method === 'DELETE' ? 'reiniciar_memoria' : req.path.endsWith('/resolver') ? 'revisar_fila' : 'testar_ia';
+    const acao = req.path.endsWith('/mensagem') ? 'responder' : req.path.endsWith('/pausa') ? (req.body?.pausado ? 'assumir' : 'devolver') : req.method === 'DELETE' ? 'reiniciar_memoria' : req.path.endsWith('/resolver') ? 'revisar_fila' : 'testar_ia';
     await audit.insertOne({ _id: id, em: new Date(), usuario: req.usuario, numero, acao, estado: 'iniciada' });
     res.once('finish', () => {
       audit.updateOne({ _id: id }, { $set: { estado: res.statusCode < 400 ? 'concluida' : 'falhou', http: res.statusCode, concluidoEm: new Date() } }).catch(() => console.error('[AUDITORIA] Não foi possível confirmar o resultado de uma ação.'));

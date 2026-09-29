@@ -1,6 +1,6 @@
 # Contexto persistente — SmartDev AI
 
-Atualizado em 22/09/2026.
+Atualizado em 25/09/2026.
 
 ## Objetivo e decisões do usuário
 
@@ -8,7 +8,7 @@ Atualizado em 22/09/2026.
 - Quando o usuário diz "plataforma", refere-se a este projeto em `E:\agente`, não ao Codex ou à plataforma OpenAI.
 - Primeiro preparar o próprio agente da SmartDev AI para operar 24x7 sem depender do computador pessoal.
 - O usuário contratou a VPS Hostinger e acessou por SSH: IP 2.25.198.132, hostname srv1978584. Telas confirmam Ubuntu 26.04.1 LTS, 7,7 GiB RAM e cerca de 94 GB livres; Docker 29.8.0 e Compose 5.5.1, serviço ativo/habilitado e nenhum container na VPS.
-- Prioridade retomada em 21/09/2026: concluir prospecção comercial automática e oferta de lançamento. Migração/backup têm histórico abaixo; o próximo backup agendado ainda precisa de comprovação própria.
+- Decisão atual de 25/09/2026: retirar a prospecção da aplicação e manter somente o atendimento do agente. As decisões e entregas de prospecção registradas abaixo permanecem apenas como histórico superado.
 - NÃO trabalhar com transcrição de áudio pelo agente, para simplificar o serviço. Essa decisão substitui propostas anteriores que incluíam áudio.
 - Guardar o contexto no projeto para manter continuidade e trabalhar de forma escalável.
 
@@ -21,13 +21,22 @@ Inspeção de código e documentação; não representa verificação da operaç
 - Atendimento com histórico, catálogo comercial, qualificação e registro de leads, pedidos de agendamento e recados.
 - Painel permite atendimento manual e pausa/retomada por contato, contas individuais, gestão de equipe e auditoria.
 - Fila persistente com deduplicação e revisão de efeitos incertos, projetada para um único processo do agente. Não suporta simplesmente adicionar réplicas concorrentes.
-- Alertas operacionais no painel. Encaminhamentos da prospecção para atendimento humano agora notificam o `ADMIN_NUMBER` pelo WhatsApp; outras notificações externas continuam sendo avaliadas conforme a necessidade.
+- Alertas operacionais no painel para falhas, espera de atendimento e tarefas da fila que exigem revisão.
 - Scripts de backup e teste de restauração em PowerShell. Sua existência não confirma que o agendamento esteja ativo.
 - Identidade, catálogo e instruções da SmartDev AI estão fixados em `agente/server.ts`.
 - Compose fixa nome do projeto, instância e portas. Copiar a pasta não basta para isolar clientes.
 - Contas da equipe não equivalem a isolamento entre empresas.
 - Registrar pedido de agendamento não significa reservar horário em calendário externo.
 - Transcrição foi removida do código e dos arquivos Compose durante a preparação da VPS. Áudio recebido gera solicitação de texto somente com agente ativo; áudio humano pausa a conversa sem transcrição. A instalação local em execução ainda usa a imagem anterior até novo deploy.
+
+## Decisão de escopo — 25/09/2026
+
+- Decisão aprovada pelo usuário: encerrar a implementação de prospecção e campanhas de saída. O produto volta a ter somente o atendimento iniciado pelo contato.
+- Preservar no atendimento: IA com histórico, catálogo, qualificação e `registrarLead`, pedidos com `agendarVisita`, `deixarRecado` e `contatoPessoal`, comandos administrativos `/leads` e `/agenda`, painel de conversas/leads/agenda/status/equipe, atendimento humano com pausa e retomada, autenticação, auditoria, fila persistente, alertas e áudio sem transcrição.
+- Os dados antigos das coleções `prospeccao_*` não devem ser apagados automaticamente. A pesquisa e a oferta em `comercial/` ficam apenas como material histórico, sem integração com o agente.
+- Implementação local concluída: removidos módulos, rotas, interceptação do webhook, inicialização, métricas, aba e arquivos do painel, variáveis de ambiente/Compose, dependência `exceljs`, documentação ativa e testes exclusivos da prospecção. Devolver uma conversa volta a alterar somente o estado do atendimento normal.
+- Validação local: `server.ts` compilado com esbuild; 9 testes de áudio sem transcrição e confiabilidade aprovados; JavaScript do painel com sintaxe válida; painel fictício servido e renderizado em navegador headless sem prospecção e com Conversas, Leads, Agenda e Status. A versão sem prospecção ainda não foi publicada na VPS.
+- As seções posteriores sobre prospecção documentam decisões e entregas anteriores e não representam o escopo atual.
 
 ## Proposta comercial em elaboração — ainda não aprovada integralmente
 
@@ -174,3 +183,8 @@ Inspeção de código e documentação; não representa verificação da operaç
 - Painel implementado: visão operacional com conversas aguardando, contatos ativos em 24h, respostas do agente, atendimentos humanos, leads em 30 dias e respostas sobre envios de campanha, além da saúde técnica já existente.
 - Validação local: 22 testes de regressão aprovados, server.ts compilado com esbuild, interações da landing verificadas em 1440px e 390px sem rolagem horizontal e sem erros no navegador.
 - Publicação: a landing entra pelo Cloudflare após push. Os novos indicadores do painel exigem atualizar e reconstruir o container agente na VPS.
+
+## Preferência de autorização do usuário (2026-09-23)
+- Decisão explícita do usuário: nunca executar mudanças ou ações imediatamente. Primeiro apresentar sugestões e aguardar aprovação explícita.
+- Isso inclui alterações de código, comandos, commits, push, deploy e ações externas. A análise e a apresentação de opções podem ser feitas sem alterar o projeto.
+- A mudança visual clara da logo e da paleta foi iniciada antes desta decisão e deve permanecer interrompida até nova aprovação do usuário.

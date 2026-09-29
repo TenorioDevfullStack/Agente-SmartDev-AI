@@ -9,14 +9,12 @@ const inicio = source.indexOf('async function processarWebhook');
 const code = source.slice(inicio, source.indexOf('// ===== PAINEL =====', inicio)).replaceAll(': any[]', '').replaceAll(': any', '');
 
 for (const caso of [
-  { nome: 'Áudio recebido pede texto sem chamar IA ou baixar mídia', fromMe: false, pausado: false, prospeccao: false, envios: 1 },
-  { nome: 'Áudio em conversa assumida é registrado sem resposta automática', fromMe: false, pausado: true, prospeccao: false, envios: 0 },
-  { nome: 'Áudio humano pausa sem transcrição', fromMe: true, pausado: false, prospeccao: false, envios: 0 },
-  { nome: 'Áudio de prospecção fica em revisão sem resposta', fromMe: false, pausado: false, prospeccao: true, envios: 0 },
+  { nome: 'Áudio recebido pede texto sem chamar IA ou baixar mídia', fromMe: false, pausado: false, envios: 1 },
+  { nome: 'Áudio em conversa assumida é registrado sem resposta automática', fromMe: false, pausado: true, envios: 0 },
+  { nome: 'Áudio humano pausa sem transcrição', fromMe: true, pausado: false, envios: 0 },
 ]) test(caso.nome, async () => {
   const logs = [], envios = [], writes = [];
   const context = { etapa, HISTORICO_MAX: 20, ADMIN_NUMBER: '', enviosPendentes: new Map(), versoesHumanas: new Map(), estadosIA: new Map(), console,
-    prospeccao: { receber: async () => caso.prospeccao },
     db: { collection: name => ({
       findOne: async () => name === 'conversas' ? { pausado: caso.pausado } : null,
       updateOne: async (_query, update) => { writes.push(update); return { upsertedCount: 1 }; },

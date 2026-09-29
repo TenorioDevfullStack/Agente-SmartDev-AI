@@ -36,8 +36,6 @@ services:
       - EVOLUTION_URL=http://evolution-api:8080
       - INSTANCE=agente-suporte
       - API_KEY=${AUTH_KEY}
-      - PROSPECCAO_PERMITIR_BAILEYS=${PROSPECCAO_PERMITIR_BAILEYS:-false}
-      - PROSPECCAO_MODELO_TEXTO=${PROSPECCAO_MODELO_TEXTO:-}
       - LLM_PROVIDER=${LLM_PROVIDER:-groq}
       - GROQ_API_KEY=${GROQ_API_KEY}
       - GROQ_MODEL=${GROQ_MODEL:-openai/gpt-oss-120b}

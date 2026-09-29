@@ -2,10 +2,6 @@ import express from "express";
 import axios from "axios";
 import { MongoClient } from "mongodb";
 import { criarAutenticacao } from "./autenticacao.mjs";
-import { criarProspeccao } from "./prospeccao.mjs";
-import { criarTransporteProspeccao } from "./prospeccao-transporte.mjs";
-import { criarVendasProspeccao } from "./prospeccao-vendas.mjs";
-import { criarPromocao } from "./prospeccao-oferta.mjs";
 import { fileURLToPath } from "node:url";
 import { criarFilaGroq, AtendimentoAssumido } from "./confiabilidade.mjs";
 import { criarFilaPersistente, etapa, RevisaoNecessaria, emFilaPersistente } from "./fila-persistente.mjs";
@@ -23,8 +19,6 @@ app.use(express.json());
 const EVOLUTION_URL = process.env.EVOLUTION_URL || "http://evolution-api:8080";
 const INSTANCE = process.env.INSTANCE || "agente-suporte";
 const API_KEY = process.env.API_KEY || "";
-const PROSPECCAO_PERMITIR_BAILEYS = process.env.PROSPECCAO_PERMITIR_BAILEYS === "true";
-const PROSPECCAO_MODELO_TEXTO = process.env.PROSPECCAO_MODELO_TEXTO || "";
 // "groq" (nuvem, padrão) ou "ollama" (local, fallback).
 const LLM_PROVIDER = (process.env.LLM_PROVIDER || "groq").toLowerCase();
 const OLLAMA_URL = process.env.OLLAMA_URL || "http://host.docker.internal:11434";
@@ -309,7 +303,6 @@ const client = new MongoClient(MONGO_URL);
 let db: any;
 let filaPersistente: any;
 let autenticacao: any;
-let prospeccao: any;
 
 async function initDb() {
   for (let i = 0; i < 10; i++) {
@@ -324,45 +317,6 @@ async function initDb() {
       await db.collection("eventos_operacionais").createIndex({ em: 1 }, { expireAfterSeconds: 604800 });
       await db.collection("eventos_operacionais").createIndex({ tipo: 1, em: -1 });
       autenticacao = await criarAutenticacao(db, express.Router, PAINEL_SENHA);
-      const transporteProspeccao = criarTransporteProspeccao({ http: axios, url: EVOLUTION_URL, instance: INSTANCE, apiKey: API_KEY, pendentes: enviosPendentes, permitirBaileys: PROSPECCAO_PERMITIR_BAILEYS, textoBaileys: PROSPECCAO_MODELO_TEXTO,
-          registrarId: (numero: string, id: string) => db.collection("envios_agente").updateOne({ _id: `${numero}:${id}` }, { $set: { em: new Date() } }, { upsert: true }),
-        });
-      const promocao = criarPromocao(db);
-      const vendas = criarVendasProspeccao(db, {
-        promocao,
-        validarTransporte: transporteProspeccao.validarConexao,
-        inferir: (messages: any[], numero: string, verificar: any) => chamarLLMReal(messages, numero, verificar, []),
-        enviar: async (numero: string, texto: string) => {
-          if (!await enviarMensagemReal(numero, texto)) throw new RevisaoNecessaria('Envio comercial não confirmado.');
-        },
-        registrarSaida: async (numero: string, texto: string) => {
-          await db.collection("conversas").updateOne({ _id: numero }, { $push: { mensagens: { $each: [{ role: "assistant", content: texto }], $slice: -HISTORICO_MAX } } });
-          await logMensagemReal(numero, "assistant", texto, "agente");
-        },
-        notificarHumano: async ({ numero, empresa, motivo }: { numero: string; empresa?: string; motivo: string }) => {
-          if (!ADMIN_NUMBER || ADMIN_NUMBER === numero) {
-            console.warn("[ADMIN] Aviso de atendimento humano não enviado: configure ADMIN_NUMBER com um WhatsApp diferente do prospecto");
-            return false;
-          }
-          const contato = formatarContato(numero);
-          return avisarAdmin(
-            "🔔 *Atendimento comercial aguardando você*\n\n" +
-            "*" + (empresa || "Prospecto") + "*\n" +
-            "📱 " + contato.exibicao + "\n" +
-            "Motivo: " + motivo + "\n\n" +
-            "Abrir conversa: " + contato.link,
-          );
-        },
-      });
-      prospeccao = criarProspeccao(db, {
-        transporte: transporteProspeccao, vendas, promocao,
-        registrarSaida: async (numero: string, texto: string, usuario: any) => {
-          await db.collection("contatos").updateOne({ _id: numero }, { $set: { avisadoEm: new Date() } }, { upsert: true });
-          await db.collection("conversas").updateOne({ _id: numero }, { $push: { mensagens: { $each: [{ role: "assistant", content: texto }], $slice: -HISTORICO_MAX } } }, { upsert: true });
-          await logMensagemReal(numero, "assistant", texto, "sistema", usuario);
-        },
-      });
-      await prospeccao.preparar();
       console.log("Conectado ao MongoDB");
       return;
     } catch {
@@ -1133,22 +1087,6 @@ async function processarWebhook(body: any, recebidoEm = new Date()) {
     return;
   }
 
-  // Prospecção usa seu fluxo comercial separado, sem as ferramentas gerais.
-  // Interceptar antes de áudio/comandos impede loops e ações indevidas por bots.
-  const textoProspeccao = texto || "[Mensagem de mídia recebida; revisar manualmente]";
-  if (numero && await etapa("prospeccao-resposta", () => prospeccao.receber(numero, textoProspeccao), true)) {
-    await etapa("prospeccao-entrada", async () => {
-      await db.collection("conversas").updateOne({ _id: numero }, { $push: { mensagens: { $each: [{ role: "user", content: textoProspeccao }], $slice: -HISTORICO_MAX } } }, { upsert: true });
-      await logMensagem(numero, "user", textoProspeccao);
-    }, true);
-    const timestampProspeccao = Number(data?.messageTimestamp);
-    const entradaProspeccao = Number.isFinite(timestampProspeccao) && timestampProspeccao > 0
-      ? new Date(Math.min(recebidoEm.getTime(), timestampProspeccao * 1000)) : recebidoEm;
-    try { await prospeccao.responder?.(numero, entradaProspeccao); }
-    finally { estadosIA.delete(numero); }
-    return;
-  }
-
   const recebeuAudio = !texto && Boolean(data?.message?.audioMessage);
   if (recebeuAudio) texto = "[Áudio recebido; atendimento por texto, sem transcrição]";
 
@@ -1268,9 +1206,6 @@ api.use("/auth", (req, res, next) => autenticacao.router(req, res, next));
 api.use((req, res, next) => autenticacao.autenticar(req, res, next));
 api.use((req, res, next) => autenticacao.acessoCompleto(req, res, next));
 api.use((req, res, next) => autenticacao.auditar(req, res, next));
-const apiProspeccao = express.Router();
-// Inicialização ocorre antes de aceitar conexões HTTP.
-api.use("/prospeccao", (req, res, next) => apiProspeccao(req, res, next));
 
 // Só dígitos: o _id das conversas é o número puro, e isso já barra qualquer
 // coisa estranha vinda da URL antes de virar consulta.
@@ -1309,13 +1244,11 @@ api.get(
 
     const inicio24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const inicio30d = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const [mensagensRecebidas24h, mensagensAgente24h, atendimentosHumanos, leads30d, campanhasEnviadas, campanhasRespondidas, contatosAtivos] = await Promise.all([
+    const [mensagensRecebidas24h, mensagensAgente24h, atendimentosHumanos, leads30d, contatosAtivos] = await Promise.all([
       db.collection("mensagens").countDocuments({ role: "user", em: { $gte: inicio24h } }),
       db.collection("mensagens").countDocuments({ role: "assistant", via: "agente", em: { $gte: inicio24h } }),
       db.collection("conversas").countDocuments({ pausado: true }),
       db.collection("leads").countDocuments({ criadoEm: { $gte: inicio30d } }),
-      db.collection("prospeccao_contatos").countDocuments({ enviadoEm: { $exists: true } }),
-      db.collection("prospeccao_contatos").countDocuments({ ultimaResposta: { $exists: true, $ne: "" } }),
       db.collection("mensagens").distinct("numero", { em: { $gte: inicio24h } }),
     ]);
     res.json({
@@ -1348,8 +1281,6 @@ api.get(
         mensagensAgente24h,
         atendimentosHumanos,
         leads30d,
-        campanhasEnviadas,
-        campanhasRespondidas,
       },
       ultimaMensagemEm: ultima[0]?.em || null,
       uptimeSegundos: Math.round(process.uptime()),
@@ -1552,15 +1483,6 @@ api.post(
       estadosIA.delete(numero);
     }
 
-    if (!pausado) {
-      const retomada = await prospeccao.retomarConversa(numero, req.usuario);
-      if (retomada?.prospecto) {
-        if (!retomada.ok) return res.status(409).json({ erro: retomada.erro });
-        console.log(`[PAINEL] ${numero}: prospecção reativada`);
-        return res.json({ ok: true, pausado: false });
-      }
-    }
-
     await db
       .collection("conversas")
       .updateOne({ _id: numero }, {
@@ -1648,10 +1570,8 @@ app.get("/", (_req, res) => res.send('Agente no ar — <a href="/painel/">abrir 
 
 initDb()
   .then(async () => {
-    prospeccao.rotas(apiProspeccao, express);
     filaPersistente = criarFilaPersistente(db, processarWebhook);
     await filaPersistente.iniciar();
-    prospeccao.iniciar();
     const servidor = app.listen(3000, () => {
       console.log("Agente ouvindo na porta 3000");
       console.log(
@@ -1665,7 +1585,6 @@ initDb()
       if (encerrando) return;
       encerrando = true;
       filaPersistente.parar();
-      await prospeccao.parar();
       servidor.close();
       console.log("[ENCERRAMENTO] Aguardando tarefas em andamento...");
       const concluiu = await filaPersistente.aguardarConclusao(90000);

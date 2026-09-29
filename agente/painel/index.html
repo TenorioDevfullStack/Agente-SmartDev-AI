@@ -421,7 +421,6 @@
     nav.abas button { padding: .35rem .45rem; font-size: .8rem; flex: none; }
   }
 </style>
-<link rel="stylesheet" href="/painel/prospeccao-crm.css">
 </head>
 <body>
 
@@ -457,7 +456,6 @@
     <button data-aba="conversas" aria-current="true">Conversas<span class="contagem" id="c-conversas"></span></button>
     <button data-aba="leads">Leads<span class="contagem" id="c-leads"></span></button>
     <button data-aba="agenda">Agenda<span class="contagem" id="c-agenda"></span></button>
-    <button data-aba="prospeccao" id="aba-prospeccao" hidden>Prospecção</button>
     <button data-aba="status">Status</button>
     <button data-aba="equipe" id="aba-equipe" hidden>Equipe</button>
   </nav>
@@ -503,71 +501,6 @@
   </section>
 
   <!-- ---------- Status ---------- -->
-  <section class="vista" data-vista="prospeccao">
-    <div class="paineis"><div class="paineis-col">
-      <div class="cartao"><h1>Prospecção</h1><p>Importe sua lista, revise os contatos e acompanhe as apresentações.</p>
-        <p>Fluxo: cadastre os prospectos, registre a autorização, configure a oferta e o horário, depois inicie. Nada é enviado apenas por cadastrar uma lista.</p>
-        <p id="pros-erro" role="alert" class="erro"></p>
-        <p id="pros-aviso" role="status"></p>
-      </div>
-      <div class="cartao"><h2>1. Importar contatos</h2>
-        <p>CSV ou Excel (.xlsx), até 2 MB e 1.000 contatos. No Excel, usamos a primeira aba. Colunas: empresa e telefone; opcionais: segmento e fonte. Um telefone com DDD por linha.</p>
-        <a href="/painel/modelo-prospeccao.csv" download>Baixar modelo de planilha</a>
-        <form id="pros-importar" class="pros-form">
-          <label>Arquivo <input id="pros-arquivo" type="file" accept=".csv,.xlsx" required></label>
-          <button class="btn" type="submit">Conferir arquivo</button>
-        </form>
-        <div id="pros-previa"></div>
-        <form id="pros-criar" class="pros-form" hidden>
-          <label>Nome da campanha <input id="pros-nome" maxlength="100" required placeholder="Clínicas da região"></label>
-          <button class="btn forte" type="submit">Importar contatos válidos</button>
-        </form>
-      </div>
-      <div class="cartao"><h2>2. Campanhas</h2>
-        <button class="btn" id="pros-atualizar" type="button">Atualizar campanhas e modelos</button>
-        <div id="pros-campanhas"></div>
-      </div>
-      <div class="cartao" id="pros-detalhe" hidden>
-        <h2 id="pros-titulo"></h2><p id="pros-resumo"></p>
-        <details><summary>Adicionar prospecto sem planilha</summary><form id="pros-contato-form" class="pros-form"><label>Empresa <input id="pros-contato-empresa" required maxlength="160"></label><label>Telefone com DDD <input id="pros-contato-telefone" required placeholder="5511999999999"></label><label>Segmento <input id="pros-contato-segmento" maxlength="160"></label><label>Fonte <input id="pros-contato-fonte" maxlength="160"></label><button class="btn" type="submit">Cadastrar prospecto</button></form></details>
-        <p id="pros-promocao" role="status"></p>
-        <form id="pros-oferta-form" class="pros-form">
-          <fieldset id="pros-oferta-campos" style="min-width:0;width:100%;border:1px solid var(--line);padding:16px">
-            <legend>Oferta e atendimento comercial</legend>
-            <label>Modo de atendimento <select id="pros-modo"><option value="assistido">Apresentação e atendimento humano</option><option value="automatico">Conversa comercial automática</option></select></label>
-            <button class="btn" id="pros-usar-lancamento" type="button">Usar oferta de lançamento</button>
-            <div id="pros-oferta-dados" class="pros-form" hidden>
-              <label>Nome da oferta <input id="pros-oferta-nome" maxlength="100"></label>
-              <label>O que está incluído <textarea id="pros-oferta-escopo" rows="5" maxlength="2000"></textarea></label>
-              <label>Implantação normal (R$) <input id="pros-oferta-implantacao" type="number" min="0" max="1000000" step="0.01"></label>
-              <label>Mensalidade (R$) <input id="pros-oferta-mensalidade" type="number" min="0" max="1000000" step="0.01"></label>
-              <label>Prazo e requisitos <textarea id="pros-oferta-prazo" rows="3" maxlength="500"></textarea></label>
-              <label>Condições, suporte e custos adicionais <textarea id="pros-oferta-condicoes" rows="6" maxlength="2000"></textarea></label>
-              <label>Link de contratação (opcional) <input id="pros-oferta-link" type="url" maxlength="1000" placeholder="https://..."></label>
-              <label><input id="pros-oferta-promocao" type="checkbox"> Lançamento: implantação de R$ 1.490 por R$ 990 e mensalidade de R$ 297 nos três primeiros meses; depois R$ 497. Limitado às dez primeiras contratações confirmadas.</label>
-              <p>Sem link, o agente registra o pedido e encaminha para você concluir. Na promoção, contrato, pagamento e disponibilidade sempre precisam de conferência humana.</p>
-              <h3>Dúvidas e objeções</h3><p>O agente seleciona as respostas cadastradas. Dúvidas sem resposta e negociações fora da oferta são encaminhadas para você.</p>
-              <div id="pros-oferta-faq"></div>
-              <button class="btn" id="pros-faq-adicionar" type="button">Adicionar pergunta e resposta</button>
-            </div>
-            <button class="btn forte" type="submit">Salvar oferta e modo</button>
-            <h3>Horário de envio</h3><p>Fuso: São Paulo. O agente só envia dentro dos dias e horários marcados.</p>
-            <div id="pros-janela-dias" class="pros-form"></div>
-            <label>Início <input id="pros-janela-inicio" type="time" value="09:00"></label>
-            <label>Fim <input id="pros-janela-fim" type="time" value="18:00"></label>
-          </fieldset>
-          <p id="pros-oferta-aviso" role="status">Configure antes de iniciar. A oferta fica bloqueada após o primeiro envio.</p>
-        </form>
-        <label>Apresentação aprovada no WhatsApp <select id="pros-modelo" aria-label="Modelo de apresentação"></select></label>
-        <label><input id="pros-risco-evolution" type="checkbox"> Confirmo que esta campanha pode usar a Evolution/Baileys não oficial, aceito risco de desconexão ou bloqueio e mantenho autorização dos destinatários.</label>
-        <p>Na API oficial, o modelo precisa estar aprovado pela Meta. No modo Evolution/Baileys, o texto configurado no servidor é enviado diretamente e a conexão não é oficial.</p>
-        <pre id="pros-texto" style="white-space:pre-wrap;overflow-wrap:anywhere"></pre>
-        <div class="pros-form"><button class="btn forte" id="pros-iniciar" type="button">Iniciar / retomar</button><button class="btn" id="pros-pausar" type="button">Pausar campanha</button></div>
-        <p>Aprovar um contato exige registrar a autorização dada pelo destinatário. Ter o telefone em uma lista pública não é autorização. Pausar interrompe novos envios e respostas; uma chamada já iniciada não pode ser desfeita. Retomar uma conversa exige nova mensagem do contato.</p>
-        <div id="pros-contatos"></div>
-      </div>
-    </div></div>
-  </section>
   <section class="vista" data-vista="status">
     <div class="paineis"><div class="paineis-col" id="painel-status"></div></div>
   </section>
@@ -587,27 +520,6 @@
   </section>
 </main>
 
-<style>
-  .pros-form { display:flex; flex-wrap:wrap; gap:12px; align-items:end; margin:16px 0; }
-  .pros-form[hidden] { display:none; }
-  .pros-form label { display:grid; gap:6px; flex:1; min-width:180px; }
-  .pros-form input, .pros-form textarea, .pros-form select, #pros-modelo { width:100%; max-width:100%; padding:10px; color:var(--ink); background:var(--raised); border:1px solid var(--line, #667); border-radius:8px; }
-  .pros-form textarea { resize:vertical; min-height:90px; }
-  .pros-form input[type="checkbox"] { width:auto; justify-self:start; }
-  #pros-oferta-dados, #pros-oferta-faq, #pros-oferta-faq .pros-form { width:100%; }
-  #pros-oferta-dados > label, #pros-oferta-faq label { flex-basis:100%; min-width:0; }
-  #pros-oferta-campos > label { margin-bottom:12px; }
-  #pros-oferta-campos:disabled { opacity:.75; }
-  .pros-form input::placeholder { color:var(--muted, #999); }
-  #pros-modelo { display:block; margin-top:8px; }
-  .pros-linha { border-top:1px solid var(--line, #ddd); padding:16px 0; overflow-wrap:anywhere; }
-  .pros-linha p { margin:6px 0; }
-  .pros-tabela { overflow:auto; max-height:320px; margin:12px 0; }
-  .pros-tabela table { border-collapse:collapse; width:100%; }
-  .pros-tabela td, .pros-tabela th { padding:8px; text-align:left; border-bottom:1px solid #ccc; }
-</style>
-<script src="/painel/prospeccao-crm.js"></script>
-<script src="/painel/prospeccao.js"></script>
 <script>
 (() => {
   "use strict";
@@ -702,10 +614,7 @@
   }
 
   // ---------- Portão de senha ----------
-  const prospeccaoUI = window.criarPainelProspeccao(api);
-  document.addEventListener('prospeccao:abrir-conversa', ev => { abrirConversa(ev.detail).catch(err => { el('pros-erro').textContent = err.message; }); });
   function pedirSenha(msg) {
-    prospeccaoUI.limpar(); el('aba-prospeccao').hidden = true;
     S.usuario = null;
     S.rascunhos = {}; S.aberta = null; S.detalhe = null; S.conversas = [];
     el('lista-conversas').innerHTML = ''; el('conversa').innerHTML = '';
@@ -743,7 +652,6 @@
   function aceitarUsuario(usuario) {
     S.usuario = usuario;
     el("aba-equipe").hidden = usuario.papel !== "admin";
-    el("aba-prospeccao").hidden = usuario.papel !== "admin";
     el("minha-conta").hidden = false;
     el("minha-conta").textContent = usuario.nome;
     if (usuario.trocarSenha) return abrirTrocaSenha(true);
@@ -809,7 +717,6 @@
       v.setAttribute("data-ativa", String(v.dataset.vista === S.aba))
     );
     if (S.aba === 'equipe') carregarEquipe().catch(err => { el('erro-equipe').textContent = err.message; });
-    if (S.aba === 'prospeccao') prospeccaoUI.abrir();
     atualizar();
   });
 
@@ -1258,7 +1165,6 @@
           <div class="metrica destaque"><div class="valor">${s.operacao?.mensagensAgente24h || 0}</div><div class="rotulo">respostas do agente</div><span class="ajuda">Mensagens automáticas enviadas nas últimas 24h.</span></div>
           <div class="metrica destaque"><div class="valor">${s.operacao?.atendimentosHumanos || 0}</div><div class="rotulo">com atendimento humano</div><span class="ajuda">Conversas atualmente assumidas por uma pessoa.</span></div>
           <div class="metrica destaque"><div class="valor">${s.operacao?.leads30d || 0}</div><div class="rotulo">leads em 30 dias</div><span class="ajuda">Novos interesses registrados no período.</span></div>
-          <div class="metrica destaque"><div class="valor">${s.operacao?.campanhasRespondidas || 0}<small> / ${s.operacao?.campanhasEnviadas || 0}</small></div><div class="rotulo">respostas de campanhas</div><span class="ajuda">Responderam entre os contatos já abordados.</span></div>
         </div>
         <p class="status-subtitulo">Saúde técnica</p>
         <div class="grade-status">
@@ -1398,7 +1304,6 @@
       if (S.aba === "agenda") {
         tarefas.push(api("/agenda").then((a) => { S.agenda = a; renderAgenda(); }));
       }
-      if (S.aba === "prospeccao" && S.usuario?.papel === "admin") tarefas.push(prospeccaoUI.atualizar());
       if (S.aberta) tarefas.push(carregarDetalhe(false));
 
       await Promise.all(tarefas);

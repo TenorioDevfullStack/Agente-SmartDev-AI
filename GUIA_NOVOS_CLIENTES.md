@@ -234,7 +234,7 @@ Segundo CONTEXTO_PROJETO.md, sem nova inspeção de código ou teste de produç�
 - Contas de equipe não representam separação entre empresas.
 - A fila foi projetada para um processo do agente; replicar processos exige trabalho específico.
 - O monitor validado cobre infraestrutura e HTTP local; não comprova conexão WhatsApp autenticada nem acesso público ponta a ponta.
-- A implantação atual de prospecção exige transporte oficial e modelo aprovado; documentar Evolution/Baileys não autoriza adaptar campanhas para contornar isso.
+- A aplicação atual não inclui prospecção nem campanhas de saída; documentar Evolution/Baileys não autoriza reintroduzir esse fluxo.
 
 Próxima sequência técnica sugerida, ainda não autorizada por este documento: preparar configuração por cliente; validar isolamento; escolher e implementar um transporte oficial; testar equivalência do painel; preparar cadastro de fornecedor quando aplicável; executar piloto; medir custo e capacidade antes de prometer quantidade de clientes por VPS.
 

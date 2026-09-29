@@ -4,7 +4,7 @@
 
 VPS `2.25.198.132`, hostname `srv1978584`, Ubuntu 26.04.1 LTS, 7,7 GiB de RAM, cerca de 94 GB livres. Docker 29.8.0 e Compose 5.5.1 instalados; Docker ativo e habilitado no boot, sem containers na captura enviada. Essas informações foram lidas das telas compartilhadas; não há sessão SSH do assistente na VPS.
 
-Prospecção está em pausa como prioridade de trabalho. Migrar o atendimento existente, preservando banco, contas, histórico e sessão. Não iniciar campanhas.
+A prospecção saiu do escopo da aplicação. Migrar somente o atendimento existente, preservando banco, contas, histórico e sessão.
 
 ## Preparação local
 

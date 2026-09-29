@@ -16,8 +16,6 @@ O painel usa contas individuais. No primeiro acesso após a migração, entre co
 
 ## Recursos
 
-- [Prospecção no painel](PROSPECCAO.md): importação CSV/Excel, revisão de contatos, autorização e campanhas com iniciar/pausar. Envio inicial depende da API oficial e de modelo aprovado; a conexão QR atual permite organizar a base.
-
 - Respostas com IA e histórico de conversa.
 - Consulta ao catálogo comercial e registro de leads.
 - Registro de pedidos de agendamento e recados para o responsável.
