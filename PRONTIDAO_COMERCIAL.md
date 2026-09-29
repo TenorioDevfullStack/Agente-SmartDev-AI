@@ -8,7 +8,7 @@
 - [x] Atendimento com IA, histórico, catálogo, qualificação e registro de leads.
 - [x] Pedidos de agendamento, recados e encaminhamento ao responsável humano.
 - [x] Testes automatizados com MongoDB, IA e WhatsApp simulados.
-- [ ] Versão sem prospecção implantada na VPS.
+- [x] Versão sem prospecção implantada na VPS em 29/09/2026 (commit `29a3b08`).
 - [x] Verificação de infraestrutura sem falhas em 22/09/2026: sete serviços em execução, painel local, WhatsApp autenticado, timers ativos, backup externo verificado há 16h e disco em 8%.
 - [ ] Fluxo real completo de atendimento recebido: resposta da IA, lead ou encaminhamento, atendimento humano e retomada.
 - [ ] Backup automático recente comprovado e restauração periódica registrada.
